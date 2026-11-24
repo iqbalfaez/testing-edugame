@@ -2,15 +2,13 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>CYBER SKY RBT - MISI KOMPONEN ELEKTRONIK &amp; MIKROPENGAWAL</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CYBER SKY RBT: Misi Komponen Elektronik &amp; Mikropengawal</title>
 
-  <!-- Google Fonts: Kanit, Orbitron, Rajdhani -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -24,8 +22,9 @@
           colors: {
             cyberCyan: '#06f6ff',
             cyberBlue: '#38bdf8',
-            cyberViolet: '#8b5cf6',
+            cyberViolet: '#a78bfa',
             cyberSlate: '#070d1f',
+            cyberPlate: '#0b142c',
             cyberTitanium: '#cbd5e1',
             cyberAmber: '#f59e0b',
           }
@@ -34,26 +33,24 @@
     };
   </script>
 
-  <!-- MediaPipe Hands & Camera Utils via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <!-- Deferred so third-party hand tracking never blocks initial UI paint -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
   <style>
     :root {
       --cyber-cyan: #06f6ff;
       --cyber-blue: #38bdf8;
-      --cyber-violet: #8b5cf6;
+      --cyber-violet: #a78bfa;
       --cyber-amber: #f59e0b;
       --cyber-titanium: #cbd5e1;
-      --cyber-slate: #060b18;
-      --glass-bg: rgba(9, 17, 38, 0.72);
-      --glass-border: rgba(6, 246, 255, 0.34);
+      --cyber-slate: #070d1f;
+      --cyber-plate: #0b142c;
     }
 
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     html, body {
@@ -62,10 +59,27 @@
       width: 100%;
       height: 100dvh;
       overflow: hidden;
-      background-color: #040814;
-      color: #f1f5f9;
+      background-color: #050a18;
+      color: #f8fafc;
       font-family: 'Kanit', 'Rajdhani', sans-serif;
-      touch-action: none;
+    }
+
+    /* Base pointer cursor layer after Tailwind preflight reset */
+    a[href], button, summary, select, label[for],
+    [role="button"], [role="tab"], [role="switch"] {
+      cursor: pointer;
+    }
+    :disabled, [aria-disabled="true"] {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    /* High-contrast focus ring for keyboard navigation */
+    button:focus-visible,
+    a:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 2.5px solid #06f6ff;
+      outline-offset: 2px;
     }
 
     #game-root {
@@ -73,7 +87,7 @@
       width: 100%;
       height: 100dvh;
       overflow: hidden;
-      background: radial-gradient(circle at 50% 25%, #111c42 0%, #070d1f 55%, #030612 100%);
+      background: linear-gradient(180deg, #050b1f 0%, #0b1430 62%, #060a18 100%);
     }
 
     #webcam-video {
@@ -95,76 +109,101 @@
       height: 100dvh;
       display: block;
       z-index: 1;
+      touch-action: none;
       cursor: crosshair;
+      user-select: none;
     }
 
-    /* Sci-Fi Glassmorphism Panels */
-    .holo-panel {
-      background: linear-gradient(145deg, rgba(11, 22, 49, 0.84), rgba(6, 12, 28, 0.90));
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(6, 246, 255, 0.32);
-      box-shadow:
-        0 0 24px rgba(6, 246, 255, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.10),
-        inset 0 0 22px rgba(139, 92, 246, 0.10);
-    }
-
-    .holo-panel-amber {
-      background: linear-gradient(145deg, rgba(28, 22, 12, 0.86), rgba(10, 15, 32, 0.90));
-      border: 1px solid rgba(245, 158, 11, 0.50);
-      box-shadow: 0 0 24px rgba(245, 158, 11, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-
-    .holo-btn {
-      position: relative;
-      overflow: hidden;
-      font-family: 'Orbitron', sans-serif;
-      letter-spacing: 0.06em;
-      transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-    .holo-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 26px rgba(6, 246, 255, 0.45);
-    }
-    .holo-btn:active {
-      transform: translateY(1px) scale(0.98);
-    }
-
-    .holo-btn-primary {
-      background: linear-gradient(135deg, rgba(6, 246, 255, 0.24), rgba(139, 92, 246, 0.35));
-      border: 1.5px solid #06f6ff;
-      color: #ecfeff;
-      box-shadow: 0 0 18px rgba(6, 246, 255, 0.28), inset 0 0 16px rgba(6, 246, 255, 0.14);
-    }
-
-    .holo-btn-secondary {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.78), rgba(15, 23, 42, 0.88));
-      border: 1px solid rgba(148, 163, 184, 0.42);
-      color: #e2e8f0;
-    }
-
-    .holo-btn-amber {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.26), rgba(180, 83, 9, 0.32));
-      border: 1.5px solid #f59e0b;
-      color: #fef3c7;
-      box-shadow: 0 0 18px rgba(245, 158, 11, 0.25);
-    }
-
-    .cyber-glow-text {
-      text-shadow: 0 0 12px rgba(6, 246, 255, 0.6), 0 0 28px rgba(56, 189, 248, 0.28);
-    }
-
-    /* Cockpit Corner Framing */
     .cockpit-frame {
       pointer-events: none;
       position: absolute;
       inset: 0;
       z-index: 5;
-      box-shadow: inset 0 0 65px rgba(4, 10, 26, 0.78);
+      box-shadow: inset 0 0 48px rgba(3, 7, 18, 0.72);
     }
 
-    /* HUD Layer */
+    /* Solid matte cockpit plate for secondary HUD modules */
+    .hud-plate {
+      background: rgba(11, 20, 44, 0.94);
+      border: 1px solid rgba(148, 163, 184, 0.34);
+    }
+
+    /* Glassmorphism limited to 2 focal surfaces: active modal and central target banner */
+    .glass-focal {
+      background: rgba(9, 17, 38, 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(6, 246, 255, 0.45);
+      box-shadow: 0 12px 36px rgba(2, 6, 23, 0.55);
+    }
+
+    .holo-btn {
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 0.05em;
+      min-height: 44px;
+      transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.18s ease;
+    }
+    .holo-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .holo-btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    /* Glow reserved as focus accent on primary CTA */
+    .holo-btn-primary {
+      background: #0d2b45;
+      border: 1.5px solid #06f6ff;
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(6, 246, 255, 0.28);
+    }
+    .holo-btn-primary:hover:not(:disabled) {
+      background: #123b5e;
+      box-shadow: 0 0 24px rgba(6, 246, 255, 0.42);
+    }
+
+    .holo-btn-secondary {
+      background: #111c36;
+      border: 1.5px solid #64748b;
+      color: #f1f5f9;
+    }
+    .holo-btn-secondary:hover:not(:disabled) {
+      background: #1a294d;
+      border-color: #cbd5e1;
+    }
+
+    .holo-btn-amber {
+      background: #2b1f0e;
+      border: 1.5px solid #f59e0b;
+      color: #fef3c7;
+    }
+    .holo-btn-amber:hover:not(:disabled) {
+      background: #3d2c12;
+      border-color: #fbbf24;
+    }
+
+    .hud-icon-btn {
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 10px;
+      background: #0f1b38;
+      border: 1px solid #64748b;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+    .hud-icon-btn:hover {
+      border-color: #06f6ff;
+      background: #15254a;
+      color: #ffffff;
+    }
+    .hud-icon-btn[aria-pressed="true"] {
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+
     #hud-layer {
       position: absolute;
       inset: 0;
@@ -173,54 +212,78 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     }
 
     .hud-interactive {
       pointer-events: auto;
     }
 
-    /* Progress Nodes */
+    /* 3-state HUD grid: phone stack (<640px), tablet 2-row (640-1024px), desktop 3-column (>1024px) */
+    .hud-top-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: stretch;
+    }
+    @media (min-width: 640px) {
+      .hud-top-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .hud-banner-cell {
+        grid-column: 1 / -1;
+        order: 3;
+      }
+    }
+    @media (min-width: 1024px) {
+      .hud-top-grid {
+        grid-template-columns: minmax(250px, 3fr) minmax(320px, 6fr) minmax(210px, 3fr);
+      }
+      .hud-banner-cell {
+        grid-column: auto;
+        order: 0;
+      }
+    }
+
+    .fluid-modal-title {
+      font-size: clamp(1.15rem, 2.8vw, 1.75rem);
+    }
+
+    .fluid-prompt-text {
+      font-size: clamp(0.875rem, 1.6vw, 1.125rem);
+    }
+
     .mission-node {
-      width: 11px;
-      height: 11px;
+      width: 10px;
+      height: 10px;
       border-radius: 9999px;
-      border: 1.5px solid rgba(148, 163, 184, 0.45);
-      background: rgba(15, 23, 42, 0.75);
-      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      border: 1.5px solid #94a3b8;
+      background: #0f172a;
+      transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
     }
     .mission-node.active {
       border-color: #06f6ff;
       background: #06f6ff;
-      box-shadow: 0 0 10px #06f6ff, 0 0 18px rgba(6, 246, 255, 0.7);
-      transform: scale(1.18);
+      transform: scale(1.12);
     }
     .mission-node.current {
       border-color: #f59e0b;
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.75);
-      animation: nodePulse 1.4s infinite ease-in-out;
+      background: rgba(245, 158, 11, 0.35);
     }
 
-    @keyframes nodePulse {
-      0%, 100% { transform: scale(1); opacity: 0.85; }
-      50% { transform: scale(1.22); opacity: 1; }
-    }
-
-    /* Radar Loader */
     .radar-ring {
       position: relative;
-      width: 132px;
-      height: 132px;
+      width: 124px;
+      height: 124px;
       border-radius: 9999px;
-      border: 2px solid rgba(6, 246, 255, 0.45);
-      background: radial-gradient(circle, rgba(6, 246, 255, 0.12) 0%, rgba(15, 23, 42, 0.88) 70%);
+      border: 2px solid rgba(6, 246, 255, 0.55);
+      background: radial-gradient(circle, rgba(6, 246, 255, 0.12) 0%, #0b142c 72%);
       overflow: hidden;
-      box-shadow: 0 0 32px rgba(6, 246, 255, 0.22), inset 0 0 24px rgba(6, 246, 255, 0.16);
     }
     .radar-sweep {
       position: absolute;
       inset: -10%;
-      background: conic-gradient(from 0deg, rgba(6, 246, 255, 0.65) 0deg, rgba(6, 246, 255, 0.05) 68deg, transparent 88deg);
+      background: conic-gradient(from 0deg, rgba(6, 246, 255, 0.6) 0deg, rgba(6, 246, 255, 0.04) 68deg, transparent 88deg);
       animation: radarSpin 1.7s linear infinite;
     }
     .radar-scanline {
@@ -228,8 +291,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #06f6ff, transparent);
-      box-shadow: 0 0 12px #06f6ff;
+      background: #06f6ff;
       animation: scanMove 2.1s ease-in-out infinite;
     }
     @keyframes radarSpin {
@@ -241,11 +303,11 @@
       50% { top: 90%; opacity: 1; }
     }
 
-    /* AI NOVA Waveform */
     .nova-bar {
       width: 3px;
+      height: 12px;
       border-radius: 999px;
-      background: linear-gradient(to top, #8b5cf6, #06f6ff);
+      background: #06f6ff;
       animation: novaWave 1.15s ease-in-out infinite;
     }
     .nova-bar:nth-child(2) { animation-delay: 0.15s; }
@@ -254,37 +316,40 @@
     .nova-bar:nth-child(5) { animation-delay: 0.20s; }
     @keyframes novaWave {
       0%, 100% { height: 6px; opacity: 0.55; }
-      50% { height: 22px; opacity: 1; }
+      50% { height: 20px; opacity: 1; }
     }
 
-    /* Holographic Star Reveal */
     .holo-star {
-      opacity: 0.18;
-      transform: scale(0.55);
+      opacity: 0.2;
+      transform: scale(0.6);
       filter: grayscale(1);
-      transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease, filter 0.4s ease;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease, filter 0.35s ease;
     }
     .holo-star.earned {
       opacity: 1;
-      transform: scale(1.12);
-      filter: grayscale(0) drop-shadow(0 0 16px rgba(245, 158, 11, 0.95)) drop-shadow(0 0 28px rgba(6, 246, 255, 0.55));
+      transform: scale(1.1);
+      filter: grayscale(0) drop-shadow(0 0 12px rgba(245, 158, 11, 0.85));
     }
 
-    /* Feedback Banner */
     #feedback-toast {
-      transition: opacity 0.25s ease, transform 0.25s ease;
+      transition: opacity 0.22s ease, transform 0.22s ease;
     }
 
-    /* Flashcard 3D Flip */
     .flashcard-scene {
       perspective: 1100px;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: inherit;
     }
     .flashcard-inner {
       position: relative;
       width: 100%;
       min-height: 235px;
       transform-style: preserve-3d;
-      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .flashcard-inner.flipped {
       transform: rotateY(180deg);
@@ -299,21 +364,19 @@
       transform: rotateY(180deg);
     }
 
-    /* Custom Scrollbar */
     .cyber-scroll::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .cyber-scroll::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
+      background: #0b142c;
       border-radius: 999px;
     }
     .cyber-scroll::-webkit-scrollbar-thumb {
-      background: rgba(6, 246, 255, 0.45);
+      background: #38bdf8;
       border-radius: 999px;
     }
 
-    /* Modal Backdrop */
     .modal-backdrop {
       position: absolute;
       inset: 0;
@@ -321,122 +384,128 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 14px;
-      background: radial-gradient(circle at 50% 30%, rgba(13, 25, 58, 0.78), rgba(3, 6, 18, 0.92));
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      padding: 12px;
+      background: rgba(4, 8, 20, 0.84);
     }
 
     .hidden-modal {
       display: none !important;
     }
 
-    /* Mode Pill Active */
     .mode-pill {
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: rgba(15, 23, 42, 0.65);
+      min-height: 44px;
+      border: 1.5px solid #475569;
+      background: #0f172a;
       color: #cbd5e1;
-      transition: all 0.2s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+    .mode-pill:hover {
+      border-color: #94a3b8;
+      color: #ffffff;
     }
     .mode-pill.selected {
       border-color: #06f6ff;
-      background: rgba(6, 246, 255, 0.18);
-      color: #ecfeff;
-      box-shadow: 0 0 14px rgba(6, 246, 255, 0.28);
+      background: #0d2b45;
+      color: #ffffff;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 639px) {
       .mission-node {
         width: 8px;
         height: 8px;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .radar-sweep,
+      .radar-scanline,
+      .nova-bar {
+        animation: none;
+      }
+      .holo-btn,
+      .flashcard-inner,
+      .holo-star,
+      .mission-node {
+        transition: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="game-root">
-    <!-- Hidden Webcam Source for MediaPipe & AR Underlay -->
-    <video id="webcam-video" playsinline muted autoplay></video>
+  <main id="game-root" aria-label="Permainan Pendidikan AR Cyber Sky RBT">
+    <video id="webcam-video" width="1280" height="720" playsinline muted autoplay aria-hidden="true"></video>
 
-    <!-- Primary Full-Viewport DPR Canvas -->
-    <canvas id="game-canvas"></canvas>
+    <canvas id="game-canvas" aria-label="Ruang permainan drone RBT"></canvas>
+    <div class="cockpit-frame" aria-hidden="true"></div>
 
-    <!-- Subtle Cockpit Edge Vignette -->
-    <div class="cockpit-frame"></div>
-
-    <!-- ==================== IN-GAME HUD ==================== -->
+    <!-- In-game HUD -->
     <div id="hud-layer" class="hidden">
-      <!-- TOP HUD ROW -->
-      <div class="flex flex-col gap-2 w-full">
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-stretch">
-          <!-- LEFT: MISSION TITLE & CONTROLS -->
-          <div class="md:col-span-3 holo-panel rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+      <header class="flex flex-col gap-2 w-full">
+        <div class="hud-top-grid">
+          <div class="hud-plate rounded-xl px-3 py-2 flex items-center justify-between gap-2">
             <div class="min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="inline-block w-2 h-2 rounded-full bg-cyberCyan shadow-[0_0_8px_#06f6ff] animate-pulse"></span>
-                <span class="font-orbitron text-[10px] sm:text-xs font-bold tracking-wider text-cyberCyan truncate">MISSION: RBT ELEKTRONIK</span>
+              <div class="flex items-center gap-2">
+                <span id="hud-state-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" aria-hidden="true"></span>
+                <span class="font-orbitron text-[11px] sm:text-xs font-bold tracking-wider text-cyberCyan truncate">MISSION: RBT ELEKTRONIK</span>
               </div>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span id="hud-mission-type" class="text-[11px] font-rajdhani font-semibold px-1.5 py-0.5 rounded bg-cyberViolet/25 border border-cyberViolet/50 text-violet-200 uppercase">MISI A</span>
-                <span id="hud-input-badge" class="text-[11px] font-rajdhani font-semibold text-slate-300 truncate">AR TANGAN</span>
+              <div class="flex items-center gap-2 mt-1">
+                <span id="hud-mission-type" class="text-[11px] font-rajdhani font-bold px-1.5 py-0.5 rounded bg-slate-800 border border-slate-500 text-slate-100 uppercase">MISI A</span>
+                <span id="hud-input-badge" class="text-xs font-rajdhani font-semibold text-slate-300 truncate">AR TANGAN</span>
               </div>
             </div>
-            <div class="flex items-center gap-1 hud-interactive shrink-0">
-              <button id="btn-toggle-cam-bg" title="Tukar Latar Kamera AR" class="w-8 h-8 rounded-lg bg-slate-800/80 border border-slate-600/60 hover:border-cyberCyan text-slate-200 flex items-center justify-center text-xs transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            <div class="flex items-center gap-1.5 hud-interactive shrink-0">
+              <button type="button" id="btn-toggle-pause" class="hud-icon-btn" aria-label="Jeda atau sambung animasi permainan" aria-pressed="false" title="Jeda / Sambung (P)">
+                <svg id="icon-pause" class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 5v14M14 5v14"/></svg>
+                <svg id="icon-play" class="w-5 h-5 hidden" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 5l12 7-12 7V5z"/></svg>
               </button>
-              <button id="btn-toggle-audio" title="Bunyi Hidup/Mati" class="w-8 h-8 rounded-lg bg-slate-800/80 border border-slate-600/60 hover:border-cyberCyan text-cyberCyan flex items-center justify-center text-xs transition">
-                <svg id="icon-sound-on" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>
-                <svg id="icon-sound-off" class="w-4 h-4 hidden text-rose-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
+              <button type="button" id="btn-toggle-cam-bg" class="hud-icon-btn" aria-label="Tukar paparan latar kamera AR" aria-pressed="true" title="Latar Kamera AR">
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               </button>
-              <button id="btn-hud-menu" title="Menu Utama" class="w-8 h-8 rounded-lg bg-slate-800/80 border border-slate-600/60 hover:border-cyberAmber text-slate-200 flex items-center justify-center text-xs transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              <button type="button" id="btn-toggle-audio" class="hud-icon-btn" aria-label="Hidupkan atau matikan bunyi" aria-pressed="false" title="Bunyi">
+                <svg id="icon-sound-on" class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>
+                <svg id="icon-sound-off" class="w-5 h-5 hidden text-rose-400" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg>
+              </button>
+              <button type="button" id="btn-hud-menu" class="hud-icon-btn" aria-label="Kembali ke menu utama" title="Menu Utama (Esc)">
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
               </button>
             </div>
           </div>
 
-          <!-- CENTER: TARGET INSTRUCTION BANNER -->
-          <div class="md:col-span-6 holo-panel rounded-xl px-3.5 py-2 flex flex-col justify-center text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyberCyan to-transparent opacity-80"></div>
-            <div id="hud-prompt-label" class="font-orbitron text-[10px] sm:text-[11px] tracking-[0.18em] text-cyberAmber font-bold uppercase">SASARAN MISI</div>
-            <div id="hud-prompt-text" class="font-kanit text-sm sm:text-base md:text-lg font-bold text-white leading-snug mt-0.5 drop-shadow-[0_0_10px_rgba(6,246,255,0.45)]">
+          <div class="hud-banner-cell glass-focal rounded-xl px-4 py-2 flex flex-col justify-center text-center">
+            <div id="hud-prompt-label" class="font-orbitron text-[11px] tracking-wider text-cyberAmber font-bold uppercase">SASARAN MISI</div>
+            <div id="hud-prompt-text" class="font-kanit fluid-prompt-text font-bold text-white leading-snug mt-0.5" aria-live="polite">
               SASARAN: Mengawal input dan output sistem elektronik
             </div>
           </div>
 
-          <!-- RIGHT: TACTICAL SCORE & COMBO -->
-          <div class="md:col-span-3 holo-panel rounded-xl px-3 py-2 flex items-center justify-between gap-3">
+          <div class="hud-plate rounded-xl px-3.5 py-2 flex items-center justify-between gap-3">
             <div>
-              <div class="font-orbitron text-[9px] sm:text-[10px] tracking-widest text-slate-400">TACTICAL SCORE</div>
-              <div id="hud-score" class="font-orbitron text-lg sm:text-2xl font-extrabold text-cyberCyan cyber-glow-text leading-tight">0</div>
+              <div class="font-orbitron text-[10px] tracking-wider text-slate-300">TACTICAL SCORE</div>
+              <div id="hud-score" class="font-orbitron text-xl sm:text-2xl font-extrabold text-cyberCyan leading-tight">0</div>
             </div>
             <div class="text-right">
-              <div class="font-orbitron text-[9px] sm:text-[10px] tracking-widest text-slate-400">COMBO</div>
-              <div id="hud-combo" class="font-orbitron text-lg sm:text-2xl font-black text-cyberAmber leading-tight drop-shadow-[0_0_10px_rgba(245,158,11,0.55)]">x1</div>
+              <div class="font-orbitron text-[10px] tracking-wider text-slate-300">COMBO</div>
+              <div id="hud-combo" class="font-orbitron text-xl sm:text-2xl font-black text-cyberAmber leading-tight">x1</div>
             </div>
           </div>
         </div>
 
-        <!-- PROGRESS MISSION BAR (16 NODES) -->
         <div class="flex justify-center">
-          <div class="holo-panel rounded-full px-3.5 py-1.5 flex items-center gap-2.5 max-w-full">
-            <span id="hud-progress-label" class="font-orbitron text-[10px] sm:text-xs font-bold tracking-wider text-cyberCyan whitespace-nowrap">RBT MISSION 00 / 16</span>
-            <div id="mission-nodes" class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center"></div>
+          <div class="hud-plate rounded-lg px-3.5 py-1.5 flex items-center gap-2.5 max-w-full">
+            <span id="hud-progress-label" class="font-orbitron text-[11px] sm:text-xs font-bold tracking-wider text-cyberCyan whitespace-nowrap">RBT MISSION 00 / 16</span>
+            <div id="mission-nodes" class="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center" aria-hidden="true"></div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <!-- CENTER FEEDBACK TOAST (Correct Reinforcement / Wrong 2s Warning / Target Lock Status) -->
       <div class="flex flex-col items-center justify-center gap-2 my-auto pointer-events-none px-2">
-        <div id="feedback-toast" class="opacity-0 scale-95 max-w-2xl w-full sm:w-auto px-4 py-2.5 rounded-xl border text-center font-kanit font-semibold text-sm sm:text-base shadow-2xl">
+        <div id="feedback-toast" role="alert" aria-live="assertive" class="opacity-0 scale-95 max-w-2xl w-full sm:w-auto px-4 py-2.5 rounded-xl border-2 text-center font-kanit font-semibold text-sm sm:text-base">
         </div>
       </div>
 
-      <!-- BOTTOM HUD: AI NOVA PANEL & CHARGE METER -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
-        <!-- A.I. NOVA Panel -->
-        <div class="holo-panel rounded-xl px-3.5 py-2 flex items-center gap-3 w-full sm:max-w-xl">
-          <div class="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-cyberCyan/20 to-cyberViolet/30 border border-cyberCyan/50 flex items-center justify-center gap-[3px] px-1.5">
+      <footer class="flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
+        <div class="hud-plate rounded-xl px-3.5 py-2 flex items-center gap-3 w-full sm:max-w-xl">
+          <div class="shrink-0 w-10 h-10 rounded-lg bg-slate-900 border border-cyan-400/50 flex items-center justify-center gap-[3px] px-1.5" aria-hidden="true">
             <span class="nova-bar"></span>
             <span class="nova-bar"></span>
             <span class="nova-bar"></span>
@@ -445,25 +514,24 @@
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="font-orbitron text-[10px] sm:text-xs font-bold tracking-widest text-cyberCyan">A.I. NOVA</span>
-              <span id="nova-status-pill" class="text-[10px] font-rajdhani font-bold px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-400/30">AKTIF</span>
+              <span class="font-orbitron text-xs font-bold tracking-wider text-cyberCyan">A.I. NOVA</span>
+              <span id="nova-status-pill" class="text-[11px] font-rajdhani font-bold px-1.5 py-0.5 rounded bg-slate-800 text-cyan-200 border border-cyan-500/40">AKTIF</span>
             </div>
-            <p id="nova-message" class="font-kanit text-xs sm:text-sm text-slate-100 leading-snug truncate sm:whitespace-normal">
+            <p id="nova-message" aria-live="polite" class="font-kanit text-xs sm:text-sm text-slate-100 leading-snug">
               Buka tapak tangan untuk mengaktifkan perisai siber.
             </p>
           </div>
         </div>
 
-        <!-- ENERGY CHARGE METER (0% -> 25% -> 50% -> 75% -> 100%) -->
-        <div class="holo-panel rounded-xl px-3.5 py-2 w-full sm:w-64 shrink-0">
-          <div class="flex items-center justify-between text-[10px] font-orbitron tracking-wider mb-1">
-            <span id="charge-status-label" class="text-slate-300">TENAGA PERISAI</span>
+        <div class="hud-plate rounded-xl px-3.5 py-2 w-full sm:w-64 shrink-0">
+          <div class="flex items-center justify-between text-[11px] font-orbitron tracking-wider mb-1">
+            <span id="charge-status-label" class="text-slate-200">TENAGA PERISAI</span>
             <span id="charge-percent-text" class="text-cyberCyan font-bold">0%</span>
           </div>
-          <div class="w-full h-2.5 bg-slate-900/90 rounded-full overflow-hidden border border-slate-700/80 relative">
-            <div id="charge-bar-fill" class="h-full w-0 bg-gradient-to-r from-cyberViolet via-cyberBlue to-cyberCyan shadow-[0_0_12px_#06f6ff] transition-[width] duration-75"></div>
+          <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-600">
+            <div id="charge-bar-fill" class="h-full w-0 bg-cyberCyan transition-[width] duration-75"></div>
           </div>
-          <div class="flex justify-between text-[9px] font-orbitron text-slate-400 mt-1">
+          <div class="flex justify-between text-[10px] font-orbitron text-slate-400 mt-1">
             <span data-step="0">0%</span>
             <span data-step="25">25%</span>
             <span data-step="50">50%</span>
@@ -471,289 +539,266 @@
             <span data-step="100">100%</span>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
 
-    <!-- ==================== START MODAL ==================== -->
-    <div id="modal-start" class="modal-backdrop">
-      <div class="holo-panel rounded-2xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-7 relative">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyberViolet via-cyberCyan to-cyberAmber"></div>
-
+    <!-- Start modal -->
+    <section id="modal-start" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="start-title">
+      <div class="glass-focal rounded-2xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-7">
         <div class="text-center">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyberCyan/10 border border-cyberCyan/40 text-cyberCyan font-orbitron text-[10px] sm:text-xs tracking-[0.2em] mb-2">
-            <span>SISTEM AR INTERAKTIF RBT</span>
-          </div>
-          <h1 class="font-orbitron text-xl sm:text-3xl font-black text-white cyber-glow-text leading-tight">
-            CYBER SKY RBT — MISI KOMPONEN ELEKTRONIK &amp; MIKROPENGAWAL
+          <h1 id="start-title" class="font-orbitron fluid-modal-title font-black text-white leading-tight">
+            CYBER SKY RBT: MISI KOMPONEN ELEKTRONIK &amp; MIKROPENGAWAL
           </h1>
           <p class="font-kanit text-slate-200 text-sm sm:text-base mt-2">
             Kenal pasti komponen elektronik dan musnahkan drone yang betul.
           </p>
         </div>
 
-        <!-- 4-Step Instructions -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5">
-          <div class="bg-slate-900/75 border border-cyan-500/25 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-lg font-extrabold text-cyberCyan">01</div>
-            <p class="text-xs sm:text-sm text-slate-200 mt-1 leading-snug">Angkat tangan di hadapan kamera</p>
-          </div>
-          <div class="bg-slate-900/75 border border-cyan-500/25 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-lg font-extrabold text-cyberCyan">02</div>
-            <p class="text-xs sm:text-sm text-slate-200 mt-1 leading-snug">Buka dan halakan tapak tangan ke drone</p>
-          </div>
-          <div class="bg-slate-900/75 border border-cyan-500/25 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-lg font-extrabold text-cyberAmber">03</div>
-            <p class="text-xs sm:text-sm text-slate-200 mt-1 leading-snug">Tunggu sasaran dikunci (0.75s)</p>
-          </div>
-          <div class="bg-slate-900/75 border border-cyan-500/25 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-lg font-extrabold text-violet-400">04</div>
-            <p class="text-xs sm:text-sm text-slate-200 mt-1 leading-snug">Tembak!</p>
-          </div>
-        </div>
+        <ol class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 list-none p-0 m-0">
+          <li class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-base font-extrabold text-cyberCyan">01</div>
+            <p class="text-xs sm:text-sm text-slate-100 mt-1 leading-snug">Angkat tangan di hadapan kamera</p>
+          </li>
+          <li class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-base font-extrabold text-cyberCyan">02</div>
+            <p class="text-xs sm:text-sm text-slate-100 mt-1 leading-snug">Buka dan halakan tapak tangan ke drone</p>
+          </li>
+          <li class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-base font-extrabold text-cyberAmber">03</div>
+            <p class="text-xs sm:text-sm text-slate-100 mt-1 leading-snug">Tunggu sasaran dikunci (0.75s)</p>
+          </li>
+          <li class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-base font-extrabold text-cyberViolet">04</div>
+            <p class="text-xs sm:text-sm text-slate-100 mt-1 leading-snug">Tembak!</p>
+          </li>
+        </ol>
 
-        <!-- Example Card -->
-        <div class="mt-4 rounded-xl bg-gradient-to-r from-cyan-950/60 via-slate-900/80 to-violet-950/60 border border-cyberCyan/35 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span class="font-orbitron text-[10px] tracking-widest text-cyberAmber uppercase shrink-0">CONTOH SASARAN</span>
+        <div class="mt-4 rounded-xl bg-slate-950 border border-cyan-500/40 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span class="font-orbitron text-[11px] tracking-wider text-cyberAmber font-bold uppercase shrink-0">CONTOH SASARAN</span>
           <span class="font-kanit text-xs sm:text-sm md:text-base text-white font-semibold text-center sm:text-right">
             <span class="text-cyberCyan font-bold">MIKROPENGAWAL</span> = Mengawal input dan output sistem elektronik
           </span>
         </div>
 
-        <!-- Mission Mode Selector -->
-        <div class="mt-4">
-          <div class="font-orbitron text-[10px] tracking-widest text-slate-400 uppercase mb-2 text-center">PILIH MOD PEMBELAJARAN</div>
+        <fieldset class="mt-4 border-0 p-0 m-0">
+          <legend class="font-orbitron text-[11px] tracking-wider text-slate-300 uppercase mb-2 text-center w-full">PILIH MOD PEMBELAJARAN</legend>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" data-mode="mixed" class="mode-pill selected rounded-xl px-3 py-2 text-center">
+            <button type="button" data-mode="mixed" aria-pressed="true" class="mode-pill selected rounded-xl px-3 py-2 text-center">
               <div class="font-orbitron text-xs font-bold">CAMPURAN (A &amp; B)</div>
-              <div class="text-[11px] text-slate-300 mt-0.5">Kenal komponen &amp; fungsi</div>
+              <div class="text-xs text-slate-300 mt-0.5">Kenal komponen &amp; fungsi</div>
             </button>
-            <button type="button" data-mode="misiA" class="mode-pill rounded-xl px-3 py-2 text-center">
+            <button type="button" data-mode="misiA" aria-pressed="false" class="mode-pill rounded-xl px-3 py-2 text-center">
               <div class="font-orbitron text-xs font-bold">MISI A</div>
-              <div class="text-[11px] text-slate-300 mt-0.5">Kenal komponen dari fungsi</div>
+              <div class="text-xs text-slate-300 mt-0.5">Kenal komponen dari fungsi</div>
             </button>
-            <button type="button" data-mode="misiB" class="mode-pill rounded-xl px-3 py-2 text-center">
+            <button type="button" data-mode="misiB" aria-pressed="false" class="mode-pill rounded-xl px-3 py-2 text-center">
               <div class="font-orbitron text-xs font-bold">MISI B</div>
-              <div class="text-[11px] text-slate-300 mt-0.5">Kenal fungsi dari komponen</div>
+              <div class="text-xs text-slate-300 mt-0.5">Kenal fungsi dari komponen</div>
             </button>
           </div>
-        </div>
+        </fieldset>
 
-        <!-- Primary & Secondary Actions -->
         <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button id="btn-start-mission" class="holo-btn holo-btn-primary w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-sm sm:text-base">
+          <button type="button" id="btn-start-mission" class="holo-btn holo-btn-primary w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-sm sm:text-base">
             MULA MISI
           </button>
-          <button id="btn-start-fallback" class="holo-btn holo-btn-secondary w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm">
+          <button type="button" id="btn-start-fallback" class="holo-btn holo-btn-secondary w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm">
             MOD TETIKUS / SENTUHAN
           </button>
-          <button id="btn-open-notes-start" class="holo-btn holo-btn-amber w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-xs sm:text-sm">
+          <button type="button" id="btn-open-notes-start" class="holo-btn holo-btn-amber w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm">
             NOTA RBT (16)
           </button>
         </div>
 
-        <p class="text-[11px] text-slate-400 text-center mt-3">
-          Tip: Jika kamera tidak tersedia, permainan menyokong kawalan klik &amp; tahan (0.75s) pada drone secara automatik.
+        <p class="text-xs text-slate-300 text-center mt-3">
+          Kawalan papan kekunci juga disokong: tekan kekunci 1 hingga 4 untuk menembak drone dan P untuk jeda.
         </p>
       </div>
-    </div>
+    </section>
 
-    <!-- ==================== LOADING MODAL ==================== -->
-    <div id="modal-loading" class="modal-backdrop hidden-modal">
-      <div class="holo-panel rounded-2xl max-w-md w-full p-6 sm:p-8 text-center flex flex-col items-center">
-        <div class="radar-ring mb-5 flex items-center justify-center">
+    <!-- Loading modal -->
+    <section id="modal-loading" class="modal-backdrop hidden-modal" role="dialog" aria-modal="true" aria-labelledby="loading-title">
+      <div class="glass-focal rounded-2xl max-w-md w-full p-6 sm:p-8 text-center flex flex-col items-center">
+        <div class="radar-ring mb-5 flex items-center justify-center" aria-hidden="true">
           <div class="radar-sweep"></div>
           <div class="radar-scanline"></div>
-          <div class="w-16 h-16 rounded-full border border-cyberCyan/35"></div>
-          <div class="absolute w-3 h-3 rounded-full bg-cyberCyan shadow-[0_0_12px_#06f6ff]"></div>
+          <div class="w-16 h-16 rounded-full border border-cyberCyan/40"></div>
+          <div class="absolute w-3 h-3 rounded-full bg-cyberCyan"></div>
         </div>
-        <h2 class="font-orbitron text-base sm:text-lg font-extrabold text-cyberCyan tracking-wider cyber-glow-text">
+        <h2 id="loading-title" class="font-orbitron text-base sm:text-lg font-extrabold text-cyberCyan tracking-wider">
           CONNECTING TO CYBER VISION...
         </h2>
-        <p id="loading-status-text" class="font-kanit text-sm text-slate-200 mt-2">
+        <p id="loading-status-text" aria-live="polite" class="font-kanit text-sm text-slate-200 mt-2">
           Mengaktifkan sistem pengesanan tangan...
         </p>
-        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-cyberCyan/35 mt-4">
-          <div id="loading-progress-bar" class="h-full w-0 bg-gradient-to-r from-cyberViolet via-cyberBlue to-cyberCyan transition-all duration-200"></div>
+        <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-600 mt-4">
+          <div id="loading-progress-bar" class="h-full w-0 bg-cyberCyan transition-all duration-200"></div>
         </div>
         <div id="loading-percent" class="font-orbitron text-xl font-black text-white mt-2">0%</div>
-        <button id="btn-loading-fallback" class="mt-4 text-xs font-orbitron text-slate-400 hover:text-cyberAmber underline underline-offset-4 transition">
+        <button type="button" id="btn-loading-fallback" class="holo-btn holo-btn-secondary mt-4 px-4 py-2 rounded-lg text-xs font-bold">
           Guna Kawalan Tetikus / Sentuhan Sahaja
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- ==================== CAMERA ERROR MODAL ==================== -->
-    <div id="modal-camera-error" class="modal-backdrop hidden-modal">
-      <div class="holo-panel rounded-2xl max-w-md w-full p-6 sm:p-7 text-center border-rose-500/50">
-        <div class="w-16 h-16 mx-auto rounded-full bg-rose-500/15 border-2 border-rose-500/70 flex items-center justify-center mb-4 shadow-[0_0_24px_rgba(244,63,94,0.3)]">
+    <!-- Camera error modal -->
+    <section id="modal-camera-error" class="modal-backdrop hidden-modal" role="dialog" aria-modal="true" aria-labelledby="camera-error-title">
+      <div class="glass-focal rounded-2xl max-w-md w-full p-6 sm:p-7 text-center border-rose-500">
+        <div class="w-16 h-16 mx-auto rounded-full bg-rose-950 border-2 border-rose-400 flex items-center justify-center mb-4" aria-hidden="true">
           <svg class="w-8 h-8 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
           </svg>
         </div>
-        <h2 class="font-orbitron text-lg sm:text-xl font-extrabold text-rose-400 tracking-wider">
+        <h2 id="camera-error-title" class="font-orbitron text-lg sm:text-xl font-extrabold text-rose-400 tracking-wider">
           AKSES KAMERA DITOLAK
         </h2>
         <p id="camera-error-detail" class="font-kanit text-sm sm:text-base text-slate-200 mt-2">
           Permainan ini memerlukan kamera untuk mengesan pergerakan tangan.
         </p>
         <div class="mt-6 flex flex-col gap-2.5">
-          <button id="btn-retry-camera" class="holo-btn holo-btn-primary w-full py-3 rounded-xl font-bold text-sm">
+          <button type="button" id="btn-retry-camera" class="holo-btn holo-btn-primary w-full py-3 rounded-xl font-bold text-sm">
             CUBA SEMULA
           </button>
-          <button id="btn-error-fallback" class="holo-btn holo-btn-amber w-full py-3 rounded-xl font-bold text-xs sm:text-sm">
-            TERUSKAN DENGAN TETIKUS / SENTUHAN (KLIK &amp; TAHAN 0.75s)
+          <button type="button" id="btn-error-fallback" class="holo-btn holo-btn-amber w-full py-3 rounded-xl font-bold text-xs sm:text-sm">
+            TERUSKAN DENGAN TETIKUS / SENTUHAN
           </button>
-          <button id="btn-error-menu" class="holo-btn holo-btn-secondary w-full py-2.5 rounded-xl font-bold text-xs">
+          <button type="button" id="btn-error-menu" class="holo-btn holo-btn-secondary w-full py-2.5 rounded-xl font-bold text-xs">
             MENU UTAMA
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ==================== VICTORY MODAL ==================== -->
-    <div id="modal-victory" class="modal-backdrop hidden-modal">
-      <div class="holo-panel rounded-2xl max-w-3xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-7 relative">
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyberAmber via-cyberCyan to-cyberViolet"></div>
-
+    <!-- Victory modal -->
+    <section id="modal-victory" class="modal-backdrop hidden-modal" role="dialog" aria-modal="true" aria-labelledby="victory-title">
+      <div class="glass-focal rounded-2xl max-w-3xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-7">
         <div class="text-center">
-          <div class="font-orbitron text-xs tracking-[0.22em] text-cyberAmber font-bold uppercase">SEMUA 16 ITEM SELESAI</div>
-          <h2 class="font-orbitron text-xl sm:text-3xl font-black text-white cyber-glow-text mt-1">
+          <div class="font-orbitron text-xs tracking-widest text-cyberAmber font-bold uppercase">SEMUA 16 ITEM SELESAI</div>
+          <h2 id="victory-title" class="font-orbitron fluid-modal-title font-black text-white mt-1">
             MISSION COMPLETE - TAHNIAH!
           </h2>
         </div>
 
-        <!-- 1–3 Holographic Stars -->
-        <div id="victory-stars" class="flex items-center justify-center gap-4 sm:gap-6 my-4 relative">
-          <div class="holo-star" data-star="1">
+        <div id="victory-stars" class="flex items-center justify-center gap-4 sm:gap-6 my-4" aria-label="Penilaian bintang">
+          <div class="holo-star" data-star="1" aria-hidden="true">
             <svg class="w-12 h-12 sm:w-16 sm:h-16 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
-          <div class="holo-star" data-star="2">
+          <div class="holo-star" data-star="2" aria-hidden="true">
             <svg class="w-14 h-14 sm:w-20 sm:h-20 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
-          <div class="holo-star" data-star="3">
+          <div class="holo-star" data-star="3" aria-hidden="true">
             <svg class="w-12 h-12 sm:w-16 sm:h-16 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           </div>
         </div>
         <div id="victory-accuracy-note" class="text-center font-rajdhani text-sm font-semibold text-cyan-200 mb-4"></div>
 
-        <!-- Score Metrics Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <div class="bg-slate-900/80 border border-cyberCyan/30 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-[10px] text-slate-400 uppercase">Skor Akhir</div>
+          <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-[10px] text-slate-300 uppercase">Skor Akhir</div>
             <div id="stat-final-score" class="font-orbitron text-xl sm:text-2xl font-black text-cyberCyan mt-0.5">0</div>
           </div>
-          <div class="bg-slate-900/80 border border-cyberAmber/30 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-[10px] text-slate-400 uppercase">Combo Tertinggi</div>
+          <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-[10px] text-slate-300 uppercase">Combo Tertinggi</div>
             <div id="stat-max-combo" class="font-orbitron text-xl sm:text-2xl font-black text-cyberAmber mt-0.5">x1</div>
           </div>
-          <div class="bg-slate-900/80 border border-rose-400/30 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-[10px] text-slate-400 uppercase">Tembakan Tersasar</div>
+          <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-[10px] text-slate-300 uppercase">Tembakan Tersasar</div>
             <div id="stat-missed" class="font-orbitron text-xl sm:text-2xl font-black text-rose-400 mt-0.5">0</div>
           </div>
-          <div class="bg-slate-900/80 border border-emerald-400/35 rounded-xl p-3 text-center">
-            <div class="font-orbitron text-[10px] text-slate-400 uppercase">Komponen Dikuasai</div>
+          <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 text-center">
+            <div class="font-orbitron text-[10px] text-slate-300 uppercase">Komponen Dikuasai</div>
             <div id="stat-mastered" class="font-orbitron text-xl sm:text-2xl font-black text-emerald-400 mt-0.5">16 / 16</div>
           </div>
         </div>
 
-        <!-- Ringkasan Pembelajaran (16 Items Table) -->
         <div class="mt-5">
           <div class="flex items-center justify-between mb-2">
             <h3 class="font-orbitron text-xs sm:text-sm font-bold text-cyberCyan tracking-wider uppercase">
               KOMPONEN RBT YANG TELAH DIPELAJARI
             </h3>
-            <span class="text-[11px] text-slate-400">16 Komponen</span>
+            <span class="text-xs text-slate-300">16 Komponen</span>
           </div>
-          <div class="rounded-xl border border-slate-700/80 overflow-hidden bg-slate-950/75 max-h-56 overflow-y-auto cyber-scroll">
+          <div class="rounded-xl border border-slate-700 overflow-x-auto max-h-56 overflow-y-auto cyber-scroll bg-slate-950">
             <table class="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead class="bg-slate-900/95 sticky top-0 z-10 border-b border-cyberCyan/30">
+              <thead class="bg-slate-900 sticky top-0 z-10 border-b border-slate-700">
                 <tr>
-                  <th class="py-2 px-3 font-orbitron text-[10px] text-cyberCyan w-10">#</th>
-                  <th class="py-2 px-3 font-orbitron text-[10px] text-cyberCyan">Nama Komponen / Istilah</th>
-                  <th class="py-2 px-3 font-orbitron text-[10px] text-cyberCyan">Fungsi / Penerangan Ringkas</th>
+                  <th scope="col" class="py-2 px-3 font-orbitron text-[11px] text-cyberCyan w-10">#</th>
+                  <th scope="col" class="py-2 px-3 font-orbitron text-[11px] text-cyberCyan">Nama Komponen / Istilah</th>
+                  <th scope="col" class="py-2 px-3 font-orbitron text-[11px] text-cyberCyan">Fungsi / Penerangan Ringkas</th>
                 </tr>
               </thead>
-              <tbody id="summary-table-body" class="divide-y divide-slate-800/80 font-kanit"></tbody>
+              <tbody id="summary-table-body" class="divide-y divide-slate-800 font-kanit"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- Post-Game Buttons -->
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          <button id="btn-play-again" class="holo-btn holo-btn-primary py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
+          <button type="button" id="btn-play-again" class="holo-btn holo-btn-primary py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
             MAIN SEMULA
           </button>
-          <button id="btn-review-notes" class="holo-btn holo-btn-amber py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
+          <button type="button" id="btn-review-notes" class="holo-btn holo-btn-amber py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
             ULANG KAJI NOTA RBT
           </button>
-          <button id="btn-victory-menu" class="holo-btn holo-btn-secondary py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
+          <button type="button" id="btn-victory-menu" class="holo-btn holo-btn-secondary py-3 px-4 rounded-xl font-bold text-xs sm:text-sm">
             MENU UTAMA
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ==================== FLASHCARD REVIEW MODAL (ULANG KAJI NOTA RBT) ==================== -->
-    <div id="modal-flashcards" class="modal-backdrop hidden-modal">
-      <div class="holo-panel rounded-2xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-6 relative">
-        <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-700/80">
+    <!-- Flashcard review modal -->
+    <section id="modal-flashcards" class="modal-backdrop hidden-modal" role="dialog" aria-modal="true" aria-labelledby="flashcard-title">
+      <div class="glass-focal rounded-2xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto cyber-scroll p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-700">
           <div>
-            <div class="font-orbitron text-[10px] tracking-widest text-cyberAmber uppercase">MOD KAD IMBASAN PEMBELAJARAN</div>
-            <h2 class="font-orbitron text-base sm:text-xl font-extrabold text-white">ULANG KAJI NOTA RBT (16 ITEM)</h2>
+            <div class="font-orbitron text-[11px] tracking-wider text-cyberAmber uppercase">MOD KAD IMBASAN PEMBELAJARAN</div>
+            <h2 id="flashcard-title" class="font-orbitron text-base sm:text-xl font-extrabold text-white">ULANG KAJI NOTA RBT (16 ITEM)</h2>
           </div>
-          <button id="btn-close-flashcards" class="holo-btn holo-btn-secondary px-3 py-1.5 rounded-lg text-xs font-bold">TUTUP</button>
+          <button type="button" id="btn-close-flashcards" class="holo-btn holo-btn-secondary px-4 py-2 rounded-lg text-xs font-bold">TUTUP</button>
         </div>
 
-        <!-- View Switcher -->
-        <div class="flex items-center justify-between gap-2 mt-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 mt-3">
           <span id="flashcard-counter" class="font-orbitron text-xs text-cyberCyan font-bold">KAD 01 / 16</span>
-          <div class="flex gap-1.5">
-            <button id="btn-fc-card-mode" class="mode-pill selected px-3 py-1 rounded-lg font-orbitron text-[10px] font-bold">KAD IMBASAN</button>
-            <button id="btn-fc-list-mode" class="mode-pill px-3 py-1 rounded-lg font-orbitron text-[10px] font-bold">SENARAI PENUH</button>
+          <div class="flex gap-2" role="tablist" aria-label="Mod paparan nota">
+            <button type="button" role="tab" aria-selected="true" id="btn-fc-card-mode" class="mode-pill selected px-3 py-2 rounded-lg font-orbitron text-[11px] font-bold">KAD IMBASAN</button>
+            <button type="button" role="tab" aria-selected="false" id="btn-fc-list-mode" class="mode-pill px-3 py-2 rounded-lg font-orbitron text-[11px] font-bold">SENARAI PENUH</button>
           </div>
         </div>
 
-        <!-- Single Flashcard Interactive View -->
         <div id="fc-single-view" class="mt-4">
-          <div class="flashcard-scene cursor-pointer" id="flashcard-trigger">
+          <button type="button" class="flashcard-scene" id="flashcard-trigger" aria-label="Terbalikkan kad imbasan untuk melihat fungsi komponen">
             <div class="flashcard-inner" id="flashcard-inner">
-              <!-- FRONT: Component + Icon -->
-              <div class="flashcard-face holo-panel rounded-2xl p-6 flex flex-col items-center justify-center text-center border-cyberCyan/50">
-                <span class="font-orbitron text-[10px] tracking-[0.2em] text-cyberCyan uppercase mb-2">NAMA KOMPONEN RBT</span>
-                <div id="fc-icon-box" class="w-20 h-20 rounded-xl bg-slate-900/90 border border-cyberCyan/40 flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(6,246,255,0.18)]"></div>
-                <div id="fc-front-name" class="font-orbitron text-xl sm:text-2xl font-black text-white cyber-glow-text"></div>
-                <span class="mt-4 text-xs text-slate-400 font-kanit">Klik kad untuk lihat fungsi komponen</span>
+              <div class="flashcard-face bg-slate-950 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-cyan-500/50">
+                <span class="font-orbitron text-[11px] tracking-wider text-cyberCyan uppercase mb-2">NAMA KOMPONEN RBT</span>
+                <div id="fc-icon-box" class="w-20 h-20 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center mb-3"></div>
+                <div id="fc-front-name" class="font-orbitron text-xl sm:text-2xl font-black text-white"></div>
+                <span class="mt-4 text-xs text-slate-300 font-kanit">Klik atau tekan Enter untuk lihat fungsi komponen</span>
               </div>
-              <!-- BACK: Function -->
-              <div class="flashcard-face flashcard-back holo-panel-amber rounded-2xl p-6 flex flex-col items-center justify-center text-center">
-                <span class="font-orbitron text-[10px] tracking-[0.2em] text-cyberAmber uppercase mb-2">FUNGSI / PENERANGAN RINGKAS</span>
+              <div class="flashcard-face flashcard-back bg-slate-950 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-amber-500/60">
+                <span class="font-orbitron text-[11px] tracking-wider text-cyberAmber uppercase mb-2">FUNGSI / PENERANGAN RINGKAS</span>
                 <div id="fc-back-name" class="font-orbitron text-sm font-bold text-cyberCyan mb-2"></div>
                 <div id="fc-back-func" class="font-kanit text-lg sm:text-xl font-bold text-white leading-relaxed max-w-md"></div>
-                <span class="mt-5 text-xs text-amber-200/75 font-kanit">Klik semula untuk kembali ke hadapan</span>
+                <span class="mt-5 text-xs text-amber-200 font-kanit">Klik semula untuk kembali ke hadapan</span>
               </div>
             </div>
-          </div>
+          </button>
 
           <div class="flex items-center justify-between gap-2 mt-4">
-            <button id="btn-fc-prev" class="holo-btn holo-btn-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex-1">← SEBELUM</button>
-            <button id="btn-fc-flip" class="holo-btn holo-btn-primary px-5 py-2.5 rounded-xl text-xs font-bold flex-1">TERBALIKKAN KAD</button>
-            <button id="btn-fc-next" class="holo-btn holo-btn-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex-1">SETERUSNYA →</button>
+            <button type="button" id="btn-fc-prev" class="holo-btn holo-btn-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex-1">SEBELUM</button>
+            <button type="button" id="btn-fc-flip" class="holo-btn holo-btn-primary px-5 py-2.5 rounded-xl text-xs font-bold flex-1">TERBALIKKAN KAD</button>
+            <button type="button" id="btn-fc-next" class="holo-btn holo-btn-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex-1">SETERUSNYA</button>
           </div>
         </div>
 
-        <!-- Full 16-Item Grid View -->
         <div id="fc-list-view" class="hidden mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[58dvh] overflow-y-auto cyber-scroll pr-1"></div>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script>
     (() => {
       'use strict';
 
-      /* ============================================================================
-         1. BANK KOSA KATA & KONSEP RBT (EXACT 16 ITEMS)
-      ============================================================================ */
       const RBT_ITEMS = [
         { id: 1,  code: 'mcu',        name: 'Mikropengawal',          func: 'Mengawal input dan output sistem elektronik' },
         { id: 2,  code: 'breadboard', name: 'Papan Reka',             func: 'Membina litar sementara tanpa pematerian' },
@@ -773,24 +818,14 @@
         { id: 16, code: 'pcb',        name: 'Papan Litar Tercetak',   func: 'Papan untuk memasang dan memateri komponen (PCB)' }
       ];
 
-      /* ============================================================================
-         2. PROCEDURAL WEB AUDIO SYNTHESIZER (NO EXTERNAL MP3/WAV)
-            8 Required Sounds:
-            - Charge Ramp
-            - Aero-Pulse Blast
-            - Drone Explosion
-            - Deflect Buzz
-            - Victory Arpeggio
-            - Target Lock
-            - Error Alert
-            - Mission Complete
-      ============================================================================ */
+      // Procedural Web Audio API synth; avoids external mp3/wav files per spec.
       class CyberAudioSynth {
         constructor() {
           this.ctx = null;
           this.muted = false;
           this.chargeOsc = null;
           this.chargeSubOsc = null;
+          this.chargeFilter = null;
           this.chargeGain = null;
           this.isChargingSound = false;
         }
@@ -812,7 +847,6 @@
           if (val) this.stopChargeRamp();
         }
 
-        // 1. Charge Ramp (continuous pitch ramp while locking 0..1)
         updateChargeRamp(progress) {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -877,7 +911,6 @@
           this.isChargingSound = false;
         }
 
-        // 2. Target Lock
         playTargetLock() {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -898,14 +931,12 @@
           });
         }
 
-        // 3. Aero-Pulse Blast
         playAeroPulseBlast() {
           if (this.muted) return;
           const ctx = this.ensureContext();
           if (!ctx) return;
           const now = ctx.currentTime;
 
-          // Laser sweep
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sawtooth';
@@ -918,7 +949,6 @@
           osc.start(now);
           osc.stop(now + 0.27);
 
-          // High cyan shimmer
           const hi = ctx.createOscillator();
           const hiGain = ctx.createGain();
           hi.type = 'sine';
@@ -932,14 +962,12 @@
           hi.stop(now + 0.19);
         }
 
-        // 4. Drone Explosion
         playDroneExplosion() {
           if (this.muted) return;
           const ctx = this.ensureContext();
           if (!ctx) return;
           const now = ctx.currentTime;
 
-          // Filtered noise burst
           const bufferSize = Math.floor(ctx.sampleRate * 0.48);
           const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
           const data = buffer.getChannelData(0);
@@ -964,7 +992,6 @@
           nGain.connect(ctx.destination);
           noise.start(now);
 
-          // Sub boom
           const boom = ctx.createOscillator();
           const bGain = ctx.createGain();
           boom.type = 'sine';
@@ -978,7 +1005,6 @@
           boom.stop(now + 0.4);
         }
 
-        // 5. Deflect Buzz
         playDeflectBuzz() {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -1012,7 +1038,6 @@
           osc2.stop(now + 0.31);
         }
 
-        // 6. Error Alert
         playErrorAlert() {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -1032,7 +1057,6 @@
           });
         }
 
-        // 7. Victory Arpeggio (on correct drone kill)
         playVictoryArpeggio() {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -1055,7 +1079,6 @@
           });
         }
 
-        // 8. Mission Complete Fanfare
         playMissionComplete() {
           if (this.muted) return;
           const ctx = this.ensureContext();
@@ -1085,9 +1108,6 @@
         }
       }
 
-      /* ============================================================================
-         3. COMPONENT VECTOR HOLOGRAPHIC ICONS (CANVAS + SVG FOR FLASHCARDS)
-      ============================================================================ */
       function drawComponentIconCanvas(ctx, code, cx, cy, size, color = '#06f6ff') {
         ctx.save();
         ctx.translate(cx, cy);
@@ -1099,7 +1119,7 @@
         ctx.lineJoin = 'round';
 
         switch (code) {
-          case 'mcu': {
+          case 'mcu':
             ctx.strokeRect(-s * 0.55, -s * 0.55, s * 1.1, s * 1.1);
             ctx.fillStyle = 'rgba(6,246,255,0.22)';
             ctx.fillRect(-s * 0.32, -s * 0.32, s * 0.64, s * 0.64);
@@ -1113,8 +1133,7 @@
               ctx.stroke();
             }
             break;
-          }
-          case 'breadboard': {
+          case 'breadboard':
             ctx.strokeRect(-s * 0.85, -s * 0.55, s * 1.7, s * 1.1);
             ctx.beginPath();
             ctx.moveTo(-s * 0.85, 0); ctx.lineTo(s * 0.85, 0);
@@ -1127,8 +1146,7 @@
               }
             }
             break;
-          }
-          case 'resistor': {
+          case 'resistor':
             ctx.beginPath();
             ctx.moveTo(-s * 0.95, 0);
             ctx.lineTo(-s * 0.55, 0);
@@ -1140,8 +1158,7 @@
             ctx.lineTo(s * 0.95, 0);
             ctx.stroke();
             break;
-          }
-          case 'ldr': {
+          case 'ldr':
             ctx.beginPath();
             ctx.arc(0, s * 0.1, s * 0.52, 0, Math.PI * 2);
             ctx.stroke();
@@ -1152,28 +1169,24 @@
             ctx.lineTo(s * 0.18, -s * 0.12);
             ctx.lineTo(s * 0.35, s * 0.1);
             ctx.stroke();
-            // Light arrows
             ctx.beginPath();
             ctx.moveTo(-s * 0.8, -s * 0.78); ctx.lineTo(-s * 0.38, -s * 0.42);
             ctx.moveTo(-s * 0.45, -s * 0.9); ctx.lineTo(-s * 0.06, -s * 0.52);
             ctx.stroke();
             break;
-          }
-          case 'led': {
+          case 'led':
             ctx.beginPath();
             ctx.moveTo(-s * 0.88, s * 0.12); ctx.lineTo(-s * 0.32, s * 0.12);
             ctx.moveTo(s * 0.32, s * 0.12);  ctx.lineTo(s * 0.88, s * 0.12);
             ctx.moveTo(-s * 0.32, -s * 0.26); ctx.lineTo(-s * 0.32, s * 0.5); ctx.lineTo(s * 0.32, s * 0.12); ctx.closePath();
             ctx.moveTo(s * 0.32, -s * 0.28); ctx.lineTo(s * 0.32, s * 0.52);
             ctx.stroke();
-            // Emitted rays
             ctx.beginPath();
             ctx.moveTo(0, -s * 0.35); ctx.lineTo(s * 0.32, -s * 0.78);
             ctx.moveTo(s * 0.26, -s * 0.3); ctx.lineTo(s * 0.62, -s * 0.7);
             ctx.stroke();
             break;
-          }
-          case 'buzzer': {
+          case 'buzzer':
             ctx.beginPath();
             ctx.arc(-s * 0.2, 0, s * 0.45, 0, Math.PI * 2);
             ctx.stroke();
@@ -1187,8 +1200,7 @@
             ctx.arc(s * 0.18, 0, s * 0.68, -0.7, 0.7);
             ctx.stroke();
             break;
-          }
-          case 'servo': {
+          case 'servo':
             ctx.strokeRect(-s * 0.72, -s * 0.32, s * 1.44, s * 0.82);
             ctx.beginPath();
             ctx.arc(s * 0.25, -s * 0.32, s * 0.24, 0, Math.PI * 2);
@@ -1198,8 +1210,7 @@
             ctx.lineTo(-s * 0.38, -s * 0.75);
             ctx.stroke();
             break;
-          }
-          case 'dcmotor': {
+          case 'dcmotor':
             ctx.beginPath();
             ctx.arc(0, 0, s * 0.62, 0, Math.PI * 2);
             ctx.stroke();
@@ -1212,8 +1223,7 @@
             ctx.textBaseline = 'middle';
             ctx.fillText('M', 0, s * 0.05);
             break;
-          }
-          case 'ultrasonic': {
+          case 'ultrasonic':
             ctx.beginPath();
             ctx.arc(-s * 0.45, -s * 0.28, s * 0.28, 0, Math.PI * 2);
             ctx.stroke();
@@ -1227,8 +1237,7 @@
             ctx.arc(s * 0.14, 0, s * 0.68, -0.65, 0.65);
             ctx.stroke();
             break;
-          }
-          case 'temp': {
+          case 'temp':
             ctx.beginPath();
             ctx.moveTo(-s * 0.16, -s * 0.75);
             ctx.lineTo(-s * 0.16, s * 0.25);
@@ -1243,8 +1252,7 @@
             ctx.moveTo(0, s * 0.35); ctx.lineTo(0, -s * 0.35);
             ctx.stroke();
             break;
-          }
-          case 'switch': {
+          case 'switch':
             ctx.beginPath();
             ctx.moveTo(-s * 0.9, s * 0.25); ctx.lineTo(-s * 0.35, s * 0.25);
             ctx.moveTo(s * 0.35, s * 0.25); ctx.lineTo(s * 0.9, s * 0.25);
@@ -1257,8 +1265,7 @@
             ctx.arc(s * 0.35, s * 0.25, s * 0.1, 0, Math.PI * 2);
             ctx.fill();
             break;
-          }
-          case 'relay': {
+          case 'relay':
             ctx.strokeRect(-s * 0.8, -s * 0.65, s * 1.6, s * 1.3);
             ctx.strokeRect(-s * 0.56, -s * 0.26, s * 0.46, s * 0.52);
             ctx.beginPath();
@@ -1266,8 +1273,7 @@
             ctx.moveTo(s * 0.52, s * 0.12); ctx.lineTo(s * 0.52, s * 0.45);
             ctx.stroke();
             break;
-          }
-          case 'jumper': {
+          case 'jumper':
             ctx.beginPath();
             ctx.moveTo(-s * 0.65, s * 0.55);
             ctx.lineTo(-s * 0.65, s * 0.15);
@@ -1277,8 +1283,7 @@
             ctx.fillRect(-s * 0.78, s * 0.18, s * 0.26, s * 0.28);
             ctx.fillRect(s * 0.52, s * 0.18, s * 0.26, s * 0.28);
             break;
-          }
-          case 'battery': {
+          case 'battery':
             ctx.beginPath();
             ctx.moveTo(-s * 0.9, 0); ctx.lineTo(-s * 0.24, 0);
             ctx.moveTo(-s * 0.24, -s * 0.58); ctx.lineTo(-s * 0.24, s * 0.58);
@@ -1286,8 +1291,7 @@
             ctx.moveTo(s * 0.22, 0); ctx.lineTo(s * 0.9, 0);
             ctx.stroke();
             break;
-          }
-          case 'capacitor': {
+          case 'capacitor':
             ctx.beginPath();
             ctx.moveTo(-s * 0.9, 0); ctx.lineTo(-s * 0.18, 0);
             ctx.moveTo(-s * 0.18, -s * 0.58); ctx.lineTo(-s * 0.18, s * 0.58);
@@ -1295,8 +1299,7 @@
             ctx.moveTo(s * 0.18, 0); ctx.lineTo(s * 0.9, 0);
             ctx.stroke();
             break;
-          }
-          case 'pcb': {
+          case 'pcb':
             ctx.strokeRect(-s * 0.82, -s * 0.62, s * 1.64, s * 1.24);
             ctx.beginPath();
             ctx.moveTo(-s * 0.55, -s * 0.28); ctx.lineTo(0, -s * 0.28); ctx.lineTo(s * 0.28, s * 0.22); ctx.lineTo(s * 0.55, s * 0.22);
@@ -1308,7 +1311,6 @@
               ctx.fill();
             });
             break;
-          }
         }
         ctx.restore();
       }
@@ -1322,14 +1324,12 @@
         return off.toDataURL();
       }
 
-      /* ============================================================================
-         4. DOM REFERENCES
-      ============================================================================ */
       const videoEl = document.getElementById('webcam-video');
       const canvas = document.getElementById('game-canvas');
       const ctx = canvas.getContext('2d');
 
       const hudLayer = document.getElementById('hud-layer');
+      const hudStateDot = document.getElementById('hud-state-dot');
       const hudMissionType = document.getElementById('hud-mission-type');
       const hudInputBadge = document.getElementById('hud-input-badge');
       const hudPromptLabel = document.getElementById('hud-prompt-label');
@@ -1363,96 +1363,116 @@
       const summaryTableBody = document.getElementById('summary-table-body');
       const victoryAccuracyNote = document.getElementById('victory-accuracy-note');
 
-      /* ============================================================================
-         5. GAME STATE & CONFIGURATION
-      ============================================================================ */
-      const CHARGE_DURATION_MS = 750; // 0.75 seconds exact lock-and-charge
-
+      const CHARGE_DURATION_MS = 750;
+      const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
       const audio = new CyberAudioSynth();
 
       const state = {
-        screen: 'start', // start | loading | playing | error | victory
-        selectedMissionMode: 'mixed', // mixed | misiA | misiB
-        inputMode: 'hand', // hand | pointer
+        screen: 'start',
+        paused: false,
+        reducedMotion: reducedMotionQuery.matches,
+        selectedMissionMode: 'mixed',
+        inputMode: 'hand',
         showCameraUnderlay: true,
 
-        // Viewport
         width: window.innerWidth,
         height: window.innerHeight,
+        // Cap DPR at 2 to keep canvas crisp without high-DPI frame drops.
         dpr: Math.min(window.devicePixelRatio || 1, 2),
 
-        // Mission deck (16 unique non-repeating items)
         deck: [],
         completedIds: [],
         currentTargetItem: null,
-        currentRoundMission: 'A', // 'A' or 'B'
+        currentRoundMission: 'A',
         roundNumber: 0,
         roundTransitionTimer: 0,
 
-        // Scoring & Combo
         score: 0,
         streak: 0,
         comboMultiplier: 1,
         maxCombo: 1,
         missedShots: 0,
 
-        // Entities
         drones: [],
         particles: [],
         shockwaves: [],
         beams: [],
         floatingTexts: [],
 
-        // Background ambient elements
         clouds: [],
         bgParticles: [],
         speedLines: [],
         cityBuildings: [],
         altitude: 1420,
 
-        // Hand Tracking State
         handDetected: false,
         handOpenPalm: false,
-        handLandmarks: null, // normalized [{x,y,z}]
+        handLandmarks: null,
         palmPos: { x: 0, y: 0 },
         palmSmooth: { x: 0, y: 0 },
         arcRotation: 0,
 
-        // Pointer / Touch Fallback State
         pointerActive: false,
         pointerDown: false,
         pointerPos: { x: 0, y: 0 },
 
-        // Lock & Charge State
+        keyboardTargetIdx: -1,
         lockedDroneId: null,
-        chargeProgress: 0, // 0..1
+        chargeProgress: 0,
         fireCooldown: 0,
 
-        // Screen Juice
         screenShake: 0,
         screenFlash: 0,
-        flashColor: 'rgba(6, 246, 255, 0.28)',
-
-        // Toast Timer
+        flashColor: 'rgba(6, 246, 255, 0.24)',
         toastTimer: 0,
-        toastPersistent: false,
 
-        // MediaPipe / Camera handles
         mediaStream: null,
         mpHands: null,
         mpCamera: null,
         cameraRunning: false,
         processingFrame: false,
 
-        // Animation loop
         rafId: null,
         lastTime: 0,
         elapsed: 0
       };
 
-      /* ============================================================================
-         6. HELPER FUNCTIONS
-      ============================================================================ */
+      reducedMotionQuery.addEventListener('change', (e) => {
+        state.reducedMotion = e.matches;
+      });
+
+      let activeModal = modalStart;
+      let releaseFocusTrap = () => {};
+
+      function trapFocus(modal, onClose) {
+        const focusable = modal.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return () => {};
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        function onKeydown(e) {
+          if (e.key === 'Escape' && onClose) {
+            e.preventDefault();
+            onClose();
+            return;
+          }
+          if (e.key !== 'Tab') return;
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+
+        modal.addEventListener('keydown', onKeydown);
+        requestAnimationFrame(() => first.focus());
+        return () => modal.removeEventListener('keydown', onKeydown);
+      }
+
       function shuffleArray(arr) {
         const copy = arr.slice();
         for (let i = copy.length - 1; i > 0; i--) {
@@ -1462,11 +1482,17 @@
         return copy;
       }
 
-      function showModal(targetModal) {
+      function showModal(targetModal, onEscape = null) {
+        releaseFocusTrap();
+        releaseFocusTrap = () => {};
+        activeModal = targetModal;
         [modalStart, modalLoading, modalCameraError, modalVictory, modalFlashcards].forEach(m => {
           m.classList.add('hidden-modal');
         });
-        if (targetModal) targetModal.classList.remove('hidden-modal');
+        if (targetModal) {
+          targetModal.classList.remove('hidden-modal');
+          releaseFocusTrap = trapFocus(targetModal, onEscape);
+        }
       }
 
       function setNovaMessage(msg, badge = 'AKTIF') {
@@ -1480,13 +1506,13 @@
         feedbackToast.textContent = text;
         feedbackToast.classList.remove(
           'opacity-0', 'scale-95',
-          'bg-emerald-950/90', 'border-cyberCyan', 'text-cyan-100',
-          'bg-rose-950/92', 'border-rose-500', 'text-rose-100'
+          'bg-emerald-950', 'border-cyberCyan', 'text-cyan-50',
+          'bg-rose-950', 'border-rose-400', 'text-rose-50'
         );
         if (type === 'success') {
-          feedbackToast.classList.add('bg-emerald-950/90', 'border-cyberCyan', 'text-cyan-100', 'opacity-100', 'scale-100');
+          feedbackToast.classList.add('bg-emerald-950', 'border-cyberCyan', 'text-cyan-50', 'opacity-100', 'scale-100');
         } else {
-          feedbackToast.classList.add('bg-rose-950/92', 'border-rose-500', 'text-rose-100', 'opacity-100', 'scale-100');
+          feedbackToast.classList.add('bg-rose-950', 'border-rose-400', 'text-rose-50', 'opacity-100', 'scale-100');
         }
         state.toastTimer = durationSec;
       }
@@ -1508,28 +1534,31 @@
 
       function updateMissionNodesUI() {
         const done = state.completedIds.length;
-        const padded = String(done).padStart(2, '0');
-        hudProgressLabel.textContent = `RBT MISSION ${padded} / 16`;
+        hudProgressLabel.textContent = `RBT MISSION ${String(done).padStart(2, '0')} / 16`;
         const nodes = missionNodesEl.querySelectorAll('.mission-node');
         nodes.forEach((n, idx) => {
           n.classList.remove('active', 'current');
-          if (idx < done) {
-            n.classList.add('active');
-          } else if (idx === done && state.screen === 'playing') {
-            n.classList.add('current');
-          }
+          if (idx < done) n.classList.add('active');
+          else if (idx === done && state.screen === 'playing') n.classList.add('current');
         });
       }
 
       function updateHUDStats() {
         hudScore.textContent = String(state.score);
         hudCombo.textContent = `x${state.comboMultiplier}`;
-        hudInputBadge.textContent = state.inputMode === 'hand' ? 'AR TANGAN' : 'TETIKUS / SENTUHAN';
+        hudInputBadge.textContent = state.paused
+          ? 'DIJEDA'
+          : (state.inputMode === 'hand' ? 'AR TANGAN' : 'TETIKUS / SENTUHAN');
+
+        // Real state indicator dot (green = camera active, amber = pointer, slate = paused).
+        hudStateDot.classList.remove('bg-emerald-400', 'bg-amber-400', 'bg-slate-400');
+        if (state.paused) hudStateDot.classList.add('bg-slate-400');
+        else if (state.inputMode === 'hand') hudStateDot.classList.add('bg-emerald-400');
+        else hudStateDot.classList.add('bg-amber-400');
       }
 
       function updateChargeMeterUI(progress, isLocked) {
         const pct = Math.round(Math.max(0, Math.min(1, progress)) * 100);
-        // Discrete display milestones for visual snap feel while bar is smooth
         let stepPct = 0;
         if (pct >= 100) stepPct = 100;
         else if (pct >= 75) stepPct = 75;
@@ -1539,72 +1568,81 @@
         chargeBarFill.style.width = `${pct}%`;
         chargePercentText.textContent = `${pct}%`;
         chargeStatusLabel.textContent = isLocked ? (pct >= 98 ? 'FIRE!' : 'TARGET LOCK') : 'TENAGA PERISAI';
-        chargeStatusLabel.className = isLocked ? 'text-cyberCyan font-bold' : 'text-slate-300';
+        chargeStatusLabel.className = isLocked ? 'text-cyberCyan font-bold' : 'text-slate-200';
 
+        // Inactive steps use #94a3b8 (7.54:1 WCAG AA pass on #0b142c).
         document.querySelectorAll('[data-step]').forEach(el => {
           const v = Number(el.dataset.step);
-          el.style.color = stepPct >= v && pct > 0 ? '#06f6ff' : '#64748b';
+          el.style.color = stepPct >= v && pct > 0 ? '#06f6ff' : '#94a3b8';
         });
       }
 
-      /* ============================================================================
-         7. CANVAS SIZING & FUTURISTIC SKY BACKGROUND INITIALIZATION
-      ============================================================================ */
+      function setPaused(val) {
+        state.paused = val;
+        if (val) audio.stopChargeRamp();
+        const pauseBtn = document.getElementById('btn-toggle-pause');
+        pauseBtn.setAttribute('aria-pressed', String(val));
+        document.getElementById('icon-pause').classList.toggle('hidden', val);
+        document.getElementById('icon-play').classList.toggle('hidden', !val);
+        updateHUDStats();
+        if (val) {
+          setNovaMessage('Permainan dijeda. Tekan butang sambung atau kekunci P untuk teruskan.', 'JEDA');
+        } else {
+          setNovaMessage('Misi disambung. Halakan sasaran ke drone yang tepat.', 'AKTIF');
+        }
+      }
+
       function initBackgroundElements() {
         const w = state.width;
         const h = state.height;
 
-        // Soft drifting clouds
         state.clouds = [];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 7; i++) {
           state.clouds.push({
             x: Math.random() * w,
-            y: h * (0.14 + Math.random() * 0.44),
-            r: 70 + Math.random() * 110,
-            speed: 5 + Math.random() * 10,
-            alpha: 0.04 + Math.random() * 0.055
+            y: h * (0.14 + Math.random() * 0.42),
+            r: 70 + Math.random() * 100,
+            speed: 5 + Math.random() * 8,
+            alpha: 0.035 + Math.random() * 0.045
           });
         }
 
-        // Light particles
         state.bgParticles = [];
-        for (let i = 0; i < 42; i++) {
+        for (let i = 0; i < 34; i++) {
           state.bgParticles.push({
             x: Math.random() * w,
             y: Math.random() * h,
-            r: 1 + Math.random() * 2.2,
-            vy: -6 - Math.random() * 14,
-            vx: (Math.random() - 0.5) * 6,
+            r: 1 + Math.random() * 2,
+            vy: -5 - Math.random() * 12,
+            vx: (Math.random() - 0.5) * 5,
             hue: Math.random() > 0.4 ? '#06f6ff' : '#a78bfa',
-            alpha: 0.18 + Math.random() * 0.45
+            alpha: 0.16 + Math.random() * 0.36
           });
         }
 
-        // Subtle cyber speed lines at screen periphery
         state.speedLines = [];
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 12; i++) {
           const isLeft = i % 2 === 0;
           state.speedLines.push({
-            x: isLeft ? Math.random() * w * 0.18 : w * 0.82 + Math.random() * w * 0.18,
+            x: isLeft ? Math.random() * w * 0.16 : w * 0.84 + Math.random() * w * 0.16,
             y: Math.random() * h,
-            len: 40 + Math.random() * 90,
-            speed: 45 + Math.random() * 65,
-            alpha: 0.05 + Math.random() * 0.09
+            len: 36 + Math.random() * 76,
+            speed: 40 + Math.random() * 55,
+            alpha: 0.04 + Math.random() * 0.07
           });
         }
 
-        // Distant futuristic city skyline
         state.cityBuildings = [];
         let bx = 0;
         while (bx < w + 80) {
-          const bw = 22 + Math.random() * 44;
-          const bh = 28 + Math.random() * Math.min(130, h * 0.19);
+          const bw = 24 + Math.random() * 44;
+          const bh = 28 + Math.random() * Math.min(120, h * 0.18);
           state.cityBuildings.push({
             x: bx,
             w: bw,
             h: bh,
-            spire: Math.random() > 0.65,
-            litHue: Math.random() > 0.5 ? '#06f6ff' : '#8b5cf6'
+            spire: Math.random() > 0.68,
+            litHue: Math.random() > 0.5 ? '#06f6ff' : '#a78bfa'
           });
           bx += bw + 4 + Math.random() * 10;
         }
@@ -1621,59 +1659,78 @@
         canvas.style.height = `${state.height}px`;
 
         initBackgroundElements();
-        if (state.drones.length > 0) {
-          repositionDronesResponsive();
-        }
+        if (state.drones.length > 0) repositionDronesResponsive();
       }
 
-      /* ============================================================================
-         8. DRONE SPAWNING & ANTI-COLLISION LAYOUT
-      ============================================================================ */
+      // Three layout states: phone (<640), tablet/small laptop (640-1023), desktop (>=1024).
       function computeDroneSlots(count) {
         const w = state.width;
         const h = state.height;
-        const isNarrow = w < 780;
 
-        // Safe playable vertical band between top HUD & bottom AI NOVA HUD
-        const topSafe = isNarrow ? Math.max(185, h * 0.25) : Math.max(150, h * 0.23);
-        const bottomSafe = isNarrow ? Math.max(145, h * 0.20) : Math.max(125, h * 0.19);
-        const playH = Math.max(220, h - topSafe - bottomSafe);
+        if (w < 640) {
+          const topSafe = Math.max(220, h * 0.30);
+          const bottomSafe = Math.max(155, h * 0.21);
+          const playH = Math.max(200, h - topSafe - bottomSafe);
+          const cardW = Math.min(w * 0.43, 215);
+          const cardH = Math.min(playH * 0.42, 118);
+
+          if (count === 3) {
+            return [
+              { cx: w * 0.27, cy: topSafe + playH * 0.27, w: cardW, h: cardH, rangeX: w * 0.025 },
+              { cx: w * 0.73, cy: topSafe + playH * 0.27, w: cardW, h: cardH, rangeX: w * 0.025 },
+              { cx: w * 0.50, cy: topSafe + playH * 0.75, w: Math.min(w * 0.66, 255), h: cardH, rangeX: w * 0.04 }
+            ];
+          }
+          const xs = [w * 0.265, w * 0.735];
+          const ys = [topSafe + playH * 0.26, topSafe + playH * 0.74];
+          return [
+            { cx: xs[0], cy: ys[0], w: cardW, h: cardH, rangeX: w * 0.02 },
+            { cx: xs[1], cy: ys[0], w: cardW, h: cardH, rangeX: w * 0.02 },
+            { cx: xs[0], cy: ys[1], w: cardW, h: cardH, rangeX: w * 0.02 },
+            { cx: xs[1], cy: ys[1], w: cardW, h: cardH, rangeX: w * 0.02 }
+          ];
+        }
+
+        if (w < 1024) {
+          const topSafe = Math.max(205, h * 0.28);
+          const bottomSafe = Math.max(130, h * 0.18);
+          const playH = Math.max(220, h - topSafe - bottomSafe);
+          const cardW = Math.min(w * 0.38, 280);
+          const cardH = Math.min(playH * 0.40, 132);
+
+          if (count === 3) {
+            return [
+              { cx: w * 0.28, cy: topSafe + playH * 0.28, w: cardW, h: cardH, rangeX: 18 },
+              { cx: w * 0.72, cy: topSafe + playH * 0.28, w: cardW, h: cardH, rangeX: 18 },
+              { cx: w * 0.50, cy: topSafe + playH * 0.74, w: cardW, h: cardH, rangeX: 24 }
+            ];
+          }
+          const xs = [w * 0.28, w * 0.72];
+          const ys = [topSafe + playH * 0.27, topSafe + playH * 0.73];
+          return [
+            { cx: xs[0], cy: ys[0], w: cardW, h: cardH, rangeX: 18 },
+            { cx: xs[1], cy: ys[0], w: cardW, h: cardH, rangeX: 18 },
+            { cx: xs[0], cy: ys[1], w: cardW, h: cardH, rangeX: 18 },
+            { cx: xs[1], cy: ys[1], w: cardW, h: cardH, rangeX: 18 }
+          ];
+        }
+
+        const topSafe = Math.max(155, h * 0.23);
+        const bottomSafe = Math.max(125, h * 0.19);
+        const playH = Math.max(240, h - topSafe - bottomSafe);
         const midY = topSafe + playH * 0.5;
+        const usableW = w * 0.88;
+        const startX = (w - usableW) / 2;
+        const stepX = usableW / count;
+        const cardW = Math.min(stepX * 0.78, 265);
+        const cardH = Math.min(playH * 0.44, 146);
 
         const slots = [];
-        if (isNarrow) {
-          // 2 rows layout on mobile/portrait tablets for spacious, readable text!
-          const cardW = Math.min(w * 0.44, 240);
-          const cardH = Math.min(playH * 0.40, 126);
-          if (count === 3) {
-            slots.push({ cx: w * 0.28, cy: topSafe + playH * 0.27, w: cardW, h: cardH, rangeX: w * 0.04 });
-            slots.push({ cx: w * 0.72, cy: topSafe + playH * 0.27, w: cardW, h: cardH, rangeX: w * 0.04 });
-            slots.push({ cx: w * 0.50, cy: topSafe + playH * 0.74, w: Math.min(w * 0.62, 270), h: cardH, rangeX: w * 0.06 });
-          } else {
-            const xs = [w * 0.27, w * 0.73];
-            const ys = [topSafe + playH * 0.26, topSafe + playH * 0.74];
-            for (let r = 0; r < 2; r++) {
-              for (let c = 0; c < 2; c++) {
-                slots.push({ cx: xs[c], cy: ys[r], w: cardW, h: cardH, rangeX: w * 0.035 });
-              }
-            }
-          }
-        } else {
-          // Wide desktop / landscape tablet: clean staggered formation, zero overlap
-          const cols = count;
-          const usableW = w * 0.88;
-          const startX = (w - usableW) / 2;
-          const stepX = usableW / cols;
-          const cardW = Math.min(stepX * 0.80, 265);
-          const cardH = Math.min(playH * 0.44, 146);
-
-          for (let i = 0; i < count; i++) {
-            const cx = startX + stepX * (i + 0.5);
-            const yOffset = (i % 2 === 0 ? -1 : 1) * Math.min(playH * 0.14, 52);
-            const cy = midY + yOffset;
-            const maxPatrol = Math.max(10, (stepX - cardW) * 0.32);
-            slots.push({ cx, cy, w: cardW, h: cardH, rangeX: Math.min(maxPatrol, 34) });
-          }
+        for (let i = 0; i < count; i++) {
+          const cx = startX + stepX * (i + 0.5);
+          const yOffset = (i % 2 === 0 ? -1 : 1) * Math.min(playH * 0.14, 52);
+          const maxPatrol = Math.max(8, (stepX - cardW) * 0.28);
+          slots.push({ cx, cy: midY + yOffset, w: cardW, h: cardH, rangeX: Math.min(maxPatrol, 30) });
         }
         return slots;
       }
@@ -1700,20 +1757,11 @@
         state.currentTargetItem = targetItem;
         state.roundNumber++;
 
-        // Choose mission type for this round (Misi A or Misi B)
-        if (state.selectedMissionMode === 'misiA') {
-          state.currentRoundMission = 'A';
-        } else if (state.selectedMissionMode === 'misiB') {
-          state.currentRoundMission = 'B';
-        } else {
-          // Mixed: alternate neatly so students experience both Misi A & Misi B equally
-          state.currentRoundMission = (state.roundNumber % 2 === 1) ? 'A' : 'B';
-        }
+        if (state.selectedMissionMode === 'misiA') state.currentRoundMission = 'A';
+        else if (state.selectedMissionMode === 'misiB') state.currentRoundMission = 'B';
+        else state.currentRoundMission = (state.roundNumber % 2 === 1) ? 'A' : 'B';
 
-        // 3 drones for first 3 rounds, then 4 drones (spec: 3 hingga 4 drone setiap pusingan)
         const droneCount = state.roundNumber <= 3 ? 3 : 4;
-
-        // Pick distractors randomly from the other 15 items
         const others = shuffleArray(RBT_ITEMS.filter(it => it.id !== targetItem.id));
         const chosenItems = shuffleArray([targetItem, ...others.slice(0, droneCount - 1)]);
         const slots = computeDroneSlots(droneCount);
@@ -1722,62 +1770,62 @@
           const slot = slots[idx];
           return {
             uid: `drone-${state.roundNumber}-${item.id}`,
+            keyIndex: idx + 1,
             item,
             isCorrect: item.id === targetItem.id,
             displayText: state.currentRoundMission === 'A' ? item.name.toUpperCase() : item.func,
-            showIcon: state.currentRoundMission === 'A', // In Misi A show subtle component icon; in Misi B avoid giving away via icon if text is function, or show small neutral/relevant badge—actually in Misi B showing icon of each function would be cool or hinty, let's show crisp icon on Misi A and subtle holographic data glyph on Misi B so students read the Malay function!
+            // Hide icons in Misi B so students identify the Malay function text rather than matching symbols.
+            showIcon: state.currentRoundMission === 'A',
             anchorX: slot.cx,
             anchorY: slot.cy,
             x: slot.cx,
-            y: slot.cy - 90, // Smooth fly-in from above
-            spawnProgress: 0,
+            y: slot.cy - 80,
+            spawnProgress: state.reducedMotion ? 1 : 0,
             panelW: slot.w,
             panelH: slot.h,
             rangeX: slot.rangeX,
             phaseX: Math.random() * Math.PI * 2,
             phaseY: Math.random() * Math.PI * 2,
-            speedX: 0.65 + Math.random() * 0.35,
-            speedY: 1.15 + Math.random() * 0.45,
+            speedX: 0.6 + Math.random() * 0.3,
+            speedY: 1.1 + Math.random() * 0.4,
             rotorAngle: Math.random() * Math.PI * 2,
-            shieldFlash: 0, // >0 shows red Cyber Shield deflection
+            shieldFlash: 0,
             wrongCooldown: 0,
             alive: true
           };
         });
 
-        // Update HUD prompt banner & AI NOVA
         if (state.currentRoundMission === 'A') {
-          hudMissionType.textContent = 'MISI A • KENAL KOMPONEN';
+          hudMissionType.textContent = 'MISI A: KOMPONEN';
           hudPromptLabel.textContent = 'KENAL KOMPONEN BERDASARKAN FUNGSI';
           hudPromptText.textContent = `SASARAN: ${targetItem.func}`;
           if (state.inputMode === 'hand') {
             setNovaMessage('Buka tapak tangan untuk mengaktifkan perisai siber.', 'MISI A');
           } else {
-            setNovaMessage('Klik dan tahan 0.75s pada drone dengan nama komponen yang tepat.', 'MOD TETIKUS');
+            setNovaMessage('Klik dan tahan 0.75s pada drone yang tepat, atau tekan kekunci 1 hingga 4.', 'MOD TETIKUS');
           }
         } else {
-          hudMissionType.textContent = 'MISI B • KENAL FUNGSI';
+          hudMissionType.textContent = 'MISI B: FUNGSI';
           hudPromptLabel.textContent = 'APAKAH FUNGSI KOMPONEN INI?';
-          hudPromptText.textContent = `KOMPONEN: ${targetItem.name.toUpperCase()} — Apakah fungsi komponen ini?`;
+          hudPromptText.textContent = `KOMPONEN: ${targetItem.name.toUpperCase()} - Apakah fungsi komponen ini?`;
           setNovaMessage('Apakah fungsi komponen ini?', 'MISI B');
         }
 
         state.lockedDroneId = null;
+        state.keyboardTargetIdx = -1;
         state.chargeProgress = 0;
         audio.stopChargeRamp();
         updateChargeMeterUI(0, false);
         updateMissionNodesUI();
       }
 
-      /* ============================================================================
-         9. START / RESTART / VICTORY / CAMERA LIFECYCLE
-      ============================================================================ */
       function resetGameMetrics() {
         state.deck = shuffleArray(RBT_ITEMS);
         state.completedIds = [];
         state.currentTargetItem = null;
         state.roundNumber = 0;
         state.roundTransitionTimer = 0;
+        state.paused = false;
 
         state.score = 0;
         state.streak = 0;
@@ -1791,10 +1839,15 @@
         state.beams = [];
         state.floatingTexts = [];
         state.lockedDroneId = null;
+        state.keyboardTargetIdx = -1;
         state.chargeProgress = 0;
         state.fireCooldown = 0;
         state.screenShake = 0;
         state.screenFlash = 0;
+
+        document.getElementById('btn-toggle-pause').setAttribute('aria-pressed', 'false');
+        document.getElementById('icon-pause').classList.remove('hidden');
+        document.getElementById('icon-play').classList.add('hidden');
 
         hideFeedbackToast();
         audio.stopChargeRamp();
@@ -1819,9 +1872,7 @@
           } catch (_) {}
           state.mediaStream = null;
         }
-        if (videoEl.srcObject) {
-          videoEl.srcObject = null;
-        }
+        if (videoEl.srcObject) videoEl.srcObject = null;
       }
 
       async function startMissionWithCamera() {
@@ -1830,7 +1881,7 @@
         state.screen = 'loading';
         state.inputMode = 'hand';
         hudLayer.classList.add('hidden');
-        showModal(modalLoading);
+        showModal(modalLoading, () => returnToMainMenu());
 
         let fakePct = 8;
         loadingProgressBar.style.width = '8%';
@@ -1853,15 +1904,10 @@
           }
 
           const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'user',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            },
+            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
             audio: false
           });
 
-          // If user cancelled or switched to fallback during permission prompt
           if (state.screen !== 'loading') {
             stream.getTracks().forEach(t => t.stop());
             clearInterval(pctInterval);
@@ -1892,7 +1938,6 @@
             state.mpHands = hands;
           }
 
-          // Warm up & run frame pump via MediaPipe Camera or rAF pump
           state.cameraRunning = true;
           if (typeof window.Camera !== 'undefined') {
             state.mpCamera = new window.Camera(videoEl, {
@@ -1900,9 +1945,7 @@
                 if (!state.cameraRunning || state.processingFrame || !state.mpHands) return;
                 if (videoEl.readyState < 2) return;
                 state.processingFrame = true;
-                try {
-                  await state.mpHands.send({ image: videoEl });
-                } catch (_) {}
+                try { await state.mpHands.send({ image: videoEl }); } catch (_) {}
                 state.processingFrame = false;
               },
               width: 960,
@@ -1910,7 +1953,6 @@
             });
             await state.mpCamera.start();
           } else {
-            // Manual rAF fallback pump if Camera util didn't load
             const pump = async () => {
               if (!state.cameraRunning) return;
               if (videoEl.readyState >= 2 && !state.processingFrame && state.mpHands) {
@@ -1930,19 +1972,17 @@
           setTimeout(() => {
             if (state.screen !== 'loading') return;
             beginGameplay('hand');
-          }, 280);
+          }, 260);
         } catch (err) {
           clearInterval(pctInterval);
           stopCameraCleanly();
           if (state.screen !== 'loading') return;
 
           state.screen = 'error';
-          if (err && err.message === 'MEDIAPIPE_UNAVAILABLE') {
-            cameraErrorDetail.textContent = 'Pustaka pengesanan tangan MediaPipe gagal dimuatkan. Anda masih boleh bermain menggunakan mod tetikus / sentuhan.';
-          } else {
-            cameraErrorDetail.textContent = 'Permainan ini memerlukan kamera untuk mengesan pergerakan tangan.';
-          }
-          showModal(modalCameraError);
+          cameraErrorDetail.textContent = (err && err.message === 'MEDIAPIPE_UNAVAILABLE')
+            ? 'Pustaka pengesanan tangan MediaPipe gagal dimuatkan. Anda masih boleh bermain menggunakan mod tetikus atau sentuhan.'
+            : 'Permainan ini memerlukan kamera untuk mengesan pergerakan tangan.';
+          showModal(modalCameraError, () => returnToMainMenu());
         }
       }
 
@@ -1960,6 +2000,7 @@
         stopCameraCleanly();
         audio.stopChargeRamp();
         state.screen = 'start';
+        state.paused = false;
         state.drones = [];
         hudLayer.classList.add('hidden');
         hideFeedbackToast();
@@ -1976,7 +2017,6 @@
         hideFeedbackToast();
         hudLayer.classList.add('hidden');
 
-        // Compute accuracy & 1-3 star rating
         const totalShots = 16 + state.missedShots;
         const accuracy = totalShots > 0 ? Math.round((16 / totalShots) * 100) : 100;
         const stars = accuracy >= 85 ? 3 : (accuracy >= 60 ? 2 : 1);
@@ -1987,62 +2027,49 @@
         statMastered.textContent = `${state.completedIds.length} / 16`;
         victoryAccuracyNote.textContent = `Ketepatan Tembakan: ${accuracy}% (${stars} / 3 Bintang)`;
 
-        // Populate 16-item learning summary table
         summaryTableBody.innerHTML = RBT_ITEMS.map(it => `
-          <tr class="hover:bg-cyan-950/30 transition">
+          <tr class="hover:bg-slate-900">
             <td class="py-2 px-3 font-orbitron text-cyberCyan font-bold">${it.id}</td>
             <td class="py-2 px-3 font-semibold text-white">${it.name}</td>
-            <td class="py-2 px-3 text-slate-300">${it.func}</td>
+            <td class="py-2 px-3 text-slate-200">${it.func}</td>
           </tr>
         `).join('');
 
-        // Reset stars before sequential holographic reveal
         const starEls = document.querySelectorAll('#victory-stars .holo-star');
         starEls.forEach(el => el.classList.remove('earned'));
 
-        showModal(modalVictory);
+        showModal(modalVictory, () => returnToMainMenu());
 
-        // Animate earned stars one by one with canvas particle bursts
         for (let i = 1; i <= stars; i++) {
           setTimeout(() => {
             if (state.screen !== 'victory') return;
             const el = document.querySelector(`#victory-stars .holo-star[data-star="${i}"]`);
             if (el) {
               el.classList.add('earned');
-              const rect = el.getBoundingClientRect();
-              spawnExplosionParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, '#f59e0b', 22);
+              if (!state.reducedMotion) {
+                const rect = el.getBoundingClientRect();
+                spawnExplosionParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, '#f59e0b', 18);
+              }
               audio.playTargetLock();
             }
-          }, 320 * i);
+          }, state.reducedMotion ? 0 : 300 * i);
         }
       }
 
-      /* ============================================================================
-         10. MEDIAPIPE HANDS: 21 LANDMARK OPEN PALM DETECTION
-      ============================================================================ */
       function dist2D(a, b) {
         return Math.hypot(a.x - b.x, a.y - b.y);
       }
 
       function isOpenPalmGesture(lm) {
-        // Landmarks: 0=wrist, 5/6/8=index, 9/10/12=middle, 13/14/16=ring, 17/18/20=pinky, 2/4=thumb
         const wrist = lm[0];
-        const fingers = [
-          [5, 6, 8],
-          [9, 10, 12],
-          [13, 14, 16],
-          [17, 18, 20]
-        ];
+        const fingers = [[5, 6, 8], [9, 10, 12], [13, 14, 16], [17, 18, 20]];
         let extendedCount = 0;
         for (const [mcp, pip, tip] of fingers) {
           const dTip = dist2D(wrist, lm[tip]);
           const dPip = dist2D(wrist, lm[pip]);
           const dMcp = dist2D(wrist, lm[mcp]);
-          if (dTip > dPip * 1.07 && dTip > dMcp * 1.18) {
-            extendedCount++;
-          }
+          if (dTip > dPip * 1.07 && dTip > dMcp * 1.18) extendedCount++;
         }
-        // Thumb openness check
         const thumbOpen = dist2D(lm[4], lm[17]) > dist2D(lm[2], lm[17]) * 1.1;
         return extendedCount >= 3 && (extendedCount === 4 || thumbOpen);
       }
@@ -2056,14 +2083,13 @@
         }
 
         const rawLm = results.multiHandLandmarks[0];
-        // Mirror X so movement naturally matches selfie webcam view
+        // Mirror X so gauntlet motion matches the user's selfie perspective.
         const mirrored = rawLm.map(pt => ({
           x: (1 - pt.x) * state.width,
           y: pt.y * state.height,
           z: pt.z
         }));
 
-        // Palm center = average of wrist (0), index MCP (5), middle MCP (9), ring MCP (13), pinky MCP (17)
         const palmIndices = [0, 5, 9, 13, 17];
         let px = 0, py = 0;
         for (const idx of palmIndices) {
@@ -2085,16 +2111,12 @@
         state.palmPos.y = py;
       }
 
-      /* ============================================================================
-         11. TARGET LOCK, 0.75s CHARGE & FIRING MECHANICS
-      ============================================================================ */
       function findClosestDroneToPoint(px, py) {
         let best = null;
         let bestDist = Infinity;
 
         for (const d of state.drones) {
           if (!d.alive || d.spawnProgress < 0.85) continue;
-          // Generous bounding box / radius check so aiming feels intuitive
           const dx = px - d.x;
           const dy = py - d.y;
           const hitRx = d.panelW * 0.68;
@@ -2116,7 +2138,6 @@
         audio.stopChargeRamp();
         audio.playAeroPulseBlast();
 
-        // Cyber Cyan Energy Beam from palm/emitter to drone
         state.beams.push({
           x1: originX,
           y1: originY,
@@ -2127,7 +2148,6 @@
         });
 
         if (drone.isCorrect) {
-          // === JAWAPAN BETUL ===
           drone.alive = false;
           state.streak++;
           state.comboMultiplier = Math.min(5, state.streak);
@@ -2143,16 +2163,18 @@
           audio.playDroneExplosion();
           audio.playVictoryArpeggio();
 
-          spawnExplosionParticles(drone.x, drone.y, '#06f6ff', 38);
-          spawnExplosionParticles(drone.x, drone.y, '#f59e0b', 18);
+          if (!state.reducedMotion) {
+            spawnExplosionParticles(drone.x, drone.y, '#06f6ff', 34);
+            spawnExplosionParticles(drone.x, drone.y, '#f59e0b', 16);
+          }
           state.shockwaves.push({
             x: drone.x,
             y: drone.y,
             r: 16,
-            maxR: Math.max(drone.panelW, 180) * 1.15,
+            maxR: Math.max(drone.panelW, 180) * 1.1,
             color: '#06f6ff',
-            life: 0.55,
-            maxLife: 0.55
+            life: 0.5,
+            maxLife: 0.5
           });
 
           state.floatingTexts.push({
@@ -2161,12 +2183,12 @@
             text: `+${pointsEarned}`,
             sub: state.comboMultiplier > 1 ? `COMBO x${state.comboMultiplier}!` : 'TEPAT!',
             color: '#06f6ff',
-            life: 1.25,
-            maxLife: 1.25
+            life: 1.2,
+            maxLife: 1.2
           });
 
-          state.screenFlash = 0.28;
-          state.flashColor = 'rgba(6, 246, 255, 0.25)';
+          state.screenFlash = state.reducedMotion ? 0 : 0.22;
+          state.flashColor = 'rgba(6, 246, 255, 0.22)';
 
           showFeedbackToast(
             `BETUL! ${drone.item.name.toUpperCase()} = ${drone.item.func}`,
@@ -2177,10 +2199,8 @@
           updateHUDStats();
           updateMissionNodesUI();
 
-          // Transition to next round after short celebration
-          state.roundTransitionTimer = 1.45;
+          state.roundTransitionTimer = 1.4;
         } else {
-          // === JAWAPAN SALAH ===
           state.missedShots++;
           state.streak = 0;
           state.comboMultiplier = 1;
@@ -2190,24 +2210,25 @@
           audio.playDeflectBuzz();
           audio.playErrorAlert();
 
-          spawnExplosionParticles(drone.x, drone.y, '#f43f5e', 18);
+          if (!state.reducedMotion) {
+            spawnExplosionParticles(drone.x, drone.y, '#fb7185', 16);
+            state.screenShake = 12;
+            state.screenFlash = 0.18;
+            state.flashColor = 'rgba(244, 63, 94, 0.22)';
+          }
           state.shockwaves.push({
             x: drone.x,
             y: drone.y,
             r: 20,
             maxR: drone.panelW * 0.85,
-            color: '#f43f5e',
-            life: 0.42,
-            maxLife: 0.42
+            color: '#fb7185',
+            life: 0.4,
+            maxLife: 0.4
           });
-
-          state.screenShake = 14;
-          state.screenFlash = 0.22;
-          state.flashColor = 'rgba(244, 63, 94, 0.26)';
 
           const correct = state.currentTargetItem;
           showFeedbackToast(
-            `BUKAN SASARAN — Jawapan tepat: ${correct.name.toUpperCase()} (${correct.func})`,
+            `BUKAN SASARAN: Jawapan tepat ialah ${correct.name.toUpperCase()} (${correct.func})`,
             'error',
             2.0
           );
@@ -2216,72 +2237,68 @@
         }
 
         state.lockedDroneId = null;
+        state.keyboardTargetIdx = -1;
         state.chargeProgress = 0;
         state.fireCooldown = 0.45;
         updateChargeMeterUI(0, false);
       }
 
-      /* ============================================================================
-         12. PARTICLE EFFECTS
-      ============================================================================ */
       function spawnExplosionParticles(x, y, color, count) {
         for (let i = 0; i < count; i++) {
           const angle = Math.random() * Math.PI * 2;
-          const speed = 75 + Math.random() * 290;
+          const speed = 75 + Math.random() * 260;
           state.particles.push({
             x,
             y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            size: 2.5 + Math.random() * 5.5,
+            size: 2.5 + Math.random() * 5,
             color,
             rot: Math.random() * Math.PI * 2,
-            vRot: (Math.random() - 0.5) * 10,
+            vRot: (Math.random() - 0.5) * 9,
             shape: Math.random() > 0.45 ? 'shard' : 'spark',
-            life: 0.55 + Math.random() * 0.55,
-            maxLife: 1.1
+            life: 0.5 + Math.random() * 0.5,
+            maxLife: 1.0
           });
         }
-        // Keep bounded to prevent memory bloat
-        if (state.particles.length > 260) {
-          state.particles.splice(0, state.particles.length - 260);
+        // Cap pool size to prevent memory growth during rapid bursts.
+        if (state.particles.length > 220) {
+          state.particles.splice(0, state.particles.length - 220);
         }
       }
 
-      /* ============================================================================
-         13. UPDATE LOOP
-      ============================================================================ */
       function update(dt) {
-        state.elapsed += dt;
-        state.altitude += dt * 4.2;
+        if (state.paused) return;
 
-        // Smooth palm interpolation
+        state.elapsed += dt;
+        const motionFactor = state.reducedMotion ? 0 : 1;
+        state.altitude += dt * 4.2 * motionFactor;
+
         state.palmSmooth.x += (state.palmPos.x - state.palmSmooth.x) * Math.min(1, dt * 16);
         state.palmSmooth.y += (state.palmPos.y - state.palmSmooth.y) * Math.min(1, dt * 16);
 
-        // Arc core spin speed
         const arcSpinSpeed = (state.handOpenPalm || state.pointerDown) ? 7.5 : 1.6;
-        state.arcRotation += dt * arcSpinSpeed;
+        state.arcRotation += dt * arcSpinSpeed * motionFactor;
 
-        // Background animation (gentle & non-distracting)
-        for (const c of state.clouds) {
-          c.x += c.speed * dt;
-          if (c.x - c.r > state.width) c.x = -c.r;
-        }
-        for (const p of state.bgParticles) {
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          if (p.y < -10) {
-            p.y = state.height + 10;
-            p.x = Math.random() * state.width;
+        if (!state.reducedMotion) {
+          for (const c of state.clouds) {
+            c.x += c.speed * dt;
+            if (c.x - c.r > state.width) c.x = -c.r;
+          }
+          for (const p of state.bgParticles) {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            if (p.y < -10) {
+              p.y = state.height + 10;
+              p.x = Math.random() * state.width;
+            }
+          }
+          for (const sl of state.speedLines) {
+            sl.y += sl.speed * dt;
+            if (sl.y > state.height + sl.len) sl.y = -sl.len;
           }
         }
-        for (const sl of state.speedLines) {
-          sl.y += sl.speed * dt;
-          if (sl.y > state.height + sl.len) sl.y = -sl.len;
-        }
 
-        // Screen effects decay
         if (state.screenShake > 0) state.screenShake = Math.max(0, state.screenShake - dt * 36);
         if (state.screenFlash > 0) state.screenFlash = Math.max(0, state.screenFlash - dt * 1.4);
         if (state.fireCooldown > 0) state.fireCooldown = Math.max(0, state.fireCooldown - dt);
@@ -2291,7 +2308,6 @@
           if (state.toastTimer <= 0) hideFeedbackToast();
         }
 
-        // Update particles
         for (let i = state.particles.length - 1; i >= 0; i--) {
           const p = state.particles[i];
           p.x += p.vx * dt;
@@ -2303,7 +2319,6 @@
           if (p.life <= 0) state.particles.splice(i, 1);
         }
 
-        // Shockwaves
         for (let i = state.shockwaves.length - 1; i >= 0; i--) {
           const sw = state.shockwaves[i];
           sw.life -= dt;
@@ -2312,53 +2327,52 @@
           if (sw.life <= 0) state.shockwaves.splice(i, 1);
         }
 
-        // Beams
         for (let i = state.beams.length - 1; i >= 0; i--) {
           state.beams[i].life -= dt;
           if (state.beams[i].life <= 0) state.beams.splice(i, 1);
         }
 
-        // Floating Score Texts
         for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
           const ft = state.floatingTexts[i];
-          ft.y -= 42 * dt;
+          ft.y -= 40 * dt;
           ft.life -= dt;
           if (ft.life <= 0) state.floatingTexts.splice(i, 1);
         }
 
         if (state.screen !== 'playing') return;
 
-        // Round transition timer after correct kill
         if (state.roundTransitionTimer > 0) {
           state.roundTransitionTimer -= dt;
-          if (state.roundTransitionTimer <= 0) {
-            spawnRound();
-          }
+          if (state.roundTransitionTimer <= 0) spawnRound();
           return;
         }
 
-        // Update drones hover & patrol
         for (const d of state.drones) {
           if (!d.alive) continue;
-          d.spawnProgress = Math.min(1, d.spawnProgress + dt * 2.4);
+          d.spawnProgress = state.reducedMotion ? 1 : Math.min(1, d.spawnProgress + dt * 2.4);
           const easeOut = 1 - Math.pow(1 - d.spawnProgress, 3);
-          const hoverX = Math.sin(state.elapsed * d.speedX + d.phaseX) * d.rangeX;
-          const hoverY = Math.sin(state.elapsed * d.speedY + d.phaseY) * 8;
+          const hoverX = state.reducedMotion ? 0 : Math.sin(state.elapsed * d.speedX + d.phaseX) * d.rangeX;
+          const hoverY = state.reducedMotion ? 0 : Math.sin(state.elapsed * d.speedY + d.phaseY) * 7;
           d.x = d.anchorX + hoverX;
-          d.y = (d.anchorY - 90 * (1 - easeOut)) + hoverY;
-          d.rotorAngle += dt * 24;
+          d.y = (d.anchorY - 80 * (1 - easeOut)) + hoverY;
+          d.rotorAngle += dt * 24 * motionFactor;
           if (d.shieldFlash > 0) d.shieldFlash = Math.max(0, d.shieldFlash - dt);
           if (d.wrongCooldown > 0) d.wrongCooldown = Math.max(0, d.wrongCooldown - dt);
         }
 
-        // Aiming & Target Lock Logic (Hand OR Mouse/Touch Fallback)
-        const usingHand = state.inputMode === 'hand' && state.handDetected && state.handOpenPalm && !state.pointerDown;
-        const usingPointer = state.pointerDown; // Works in fallback mode OR anytime user holds mouse/touch on drone
+        const usingKeyboard = state.keyboardTargetIdx >= 0 && state.drones[state.keyboardTargetIdx] && state.drones[state.keyboardTargetIdx].alive;
+        const usingHand = state.inputMode === 'hand' && state.handDetected && state.handOpenPalm && !state.pointerDown && !usingKeyboard;
+        const usingPointer = state.pointerDown && !usingKeyboard;
 
-        if ((usingHand || usingPointer) && state.fireCooldown <= 0) {
-          const aimX = usingPointer ? state.pointerPos.x : state.palmSmooth.x;
-          const aimY = usingPointer ? state.pointerPos.y : state.palmSmooth.y;
-          const targetDrone = findClosestDroneToPoint(aimX, aimY);
+        if ((usingHand || usingPointer || usingKeyboard) && state.fireCooldown <= 0) {
+          let targetDrone = null;
+          if (usingKeyboard) {
+            targetDrone = state.drones[state.keyboardTargetIdx];
+          } else {
+            const aimX = usingPointer ? state.pointerPos.x : state.palmSmooth.x;
+            const aimY = usingPointer ? state.pointerPos.y : state.palmSmooth.y;
+            targetDrone = findClosestDroneToPoint(aimX, aimY);
+          }
 
           if (targetDrone && targetDrone.wrongCooldown <= 0) {
             if (state.lockedDroneId !== targetDrone.uid) {
@@ -2373,8 +2387,8 @@
                 setNovaMessage('Kunci sasaran... Tenaga sedang dicas.', 'MENGECAS');
               }
               if (state.chargeProgress >= 1) {
-                const originX = usingPointer ? state.width * 0.5 : state.palmSmooth.x;
-                const originY = usingPointer ? state.height - 64 : state.palmSmooth.y;
+                const originX = usingHand ? state.palmSmooth.x : state.width * 0.5;
+                const originY = usingHand ? state.palmSmooth.y : state.height - 64;
                 fireBeamAtDrone(targetDrone, originX, originY);
                 return;
               }
@@ -2404,29 +2418,23 @@
         }
       }
 
-      /* ============================================================================
-         14. RENDERING FUNCTIONS
-      ============================================================================ */
       function drawBackground() {
         const w = state.width;
         const h = state.height;
 
-        // Deep blue/violet futuristic atmosphere gradient
         const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
         skyGrad.addColorStop(0, '#050b1f');
-        skyGrad.addColorStop(0.45, '#0c1638');
-        skyGrad.addColorStop(0.76, '#1a1444');
-        skyGrad.addColorStop(1, '#070b1a');
+        skyGrad.addColorStop(0.55, '#0b1433');
+        skyGrad.addColorStop(0.82, '#14173c');
+        skyGrad.addColorStop(1, '#060a18');
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, w, h);
 
-        // Optional subtle AR Webcam Underlay (mirrored & tinted so sky/drones remain crisp)
         if (state.cameraRunning && state.showCameraUnderlay && videoEl.readyState >= 2) {
           ctx.save();
-          ctx.globalAlpha = 0.24;
+          ctx.globalAlpha = 0.22;
           ctx.translate(w, 0);
           ctx.scale(-1, 1);
-          // Cover crop
           const vw = videoEl.videoWidth || 1280;
           const vh = videoEl.videoHeight || 720;
           const scale = Math.max(w / vw, h / vh);
@@ -2436,31 +2444,21 @@
           ctx.restore();
         }
 
-        // Atmospheric violet/cyan radial glow near horizon
         const horizonY = h * 0.78;
-        const glowGrad = ctx.createRadialGradient(w * 0.5, horizonY, 20, w * 0.5, horizonY, w * 0.65);
-        glowGrad.addColorStop(0, 'rgba(6, 246, 255, 0.14)');
-        glowGrad.addColorStop(0.45, 'rgba(139, 92, 246, 0.12)');
-        glowGrad.addColorStop(1, 'rgba(6, 11, 24, 0)');
-        ctx.fillStyle = glowGrad;
-        ctx.fillRect(0, 0, w, h);
-
-        // Slow drifting clouds
         for (const c of state.clouds) {
           const cg = ctx.createRadialGradient(c.x, c.y, c.r * 0.1, c.x, c.y, c.r);
           cg.addColorStop(0, `rgba(148, 197, 255, ${c.alpha})`);
           cg.addColorStop(1, 'rgba(148, 197, 255, 0)');
           ctx.fillStyle = cg;
           ctx.beginPath();
-          ctx.ellipse(c.x, c.y, c.r * 1.45, c.r * 0.48, 0, 0, Math.PI * 2);
+          ctx.ellipse(c.x, c.y, c.r * 1.45, c.r * 0.45, 0, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        // Distant futuristic cyber city skyline
         ctx.save();
         for (const b of state.cityBuildings) {
           const topY = horizonY - b.h;
-          ctx.fillStyle = 'rgba(7, 13, 32, 0.84)';
+          ctx.fillStyle = 'rgba(7, 13, 32, 0.88)';
           ctx.fillRect(b.x, topY, b.w, b.h + h * 0.25);
           ctx.strokeStyle = 'rgba(56, 189, 248, 0.14)';
           ctx.lineWidth = 1;
@@ -2468,35 +2466,33 @@
           if (b.spire) {
             ctx.beginPath();
             ctx.moveTo(b.x + b.w * 0.5, topY);
-            ctx.lineTo(b.x + b.w * 0.5, topY - 18);
+            ctx.lineTo(b.x + b.w * 0.5, topY - 16);
             ctx.strokeStyle = b.litHue;
-            ctx.globalAlpha = 0.35;
+            ctx.globalAlpha = 0.32;
             ctx.stroke();
             ctx.globalAlpha = 1;
           }
         }
         ctx.restore();
 
-        // Glowing horizon line
         ctx.save();
-        ctx.strokeStyle = 'rgba(6, 246, 255, 0.42)';
+        ctx.strokeStyle = 'rgba(6, 246, 255, 0.36)';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(0, horizonY);
         ctx.lineTo(w, horizonY);
         ctx.stroke();
 
-        // Holographic perspective grid below horizon
-        ctx.strokeStyle = 'rgba(139, 92, 246, 0.18)';
+        // Cockpit horizon perspective grid for flight altitude depth.
+        ctx.strokeStyle = 'rgba(167, 139, 250, 0.16)';
         ctx.lineWidth = 1;
-        const gridCols = 14;
-        for (let i = -gridCols; i <= gridCols; i++) {
+        for (let i = -12; i <= 12; i++) {
           ctx.beginPath();
           ctx.moveTo(w * 0.5 + i * (w / 18), horizonY);
           ctx.lineTo(w * 0.5 + i * (w / 4.2), h);
           ctx.stroke();
         }
-        const gridScroll = (state.elapsed * 18) % 28;
+        const gridScroll = state.reducedMotion ? 0 : (state.elapsed * 16) % 28;
         for (let r = 0; r < 6; r++) {
           const t = (r * 28 + gridScroll) / (6 * 28);
           const gy = horizonY + Math.pow(t, 1.55) * (h - horizonY);
@@ -2507,7 +2503,6 @@
         }
         ctx.restore();
 
-        // Ambient light particles
         for (const p of state.bgParticles) {
           ctx.fillStyle = p.hue;
           ctx.globalAlpha = p.alpha;
@@ -2517,8 +2512,7 @@
         }
         ctx.globalAlpha = 1;
 
-        // Peripheral speed lines
-        ctx.strokeStyle = 'rgba(6, 246, 255, 0.12)';
+        ctx.strokeStyle = 'rgba(6, 246, 255, 0.10)';
         ctx.lineWidth = 1;
         for (const sl of state.speedLines) {
           ctx.globalAlpha = sl.alpha;
@@ -2529,16 +2523,12 @@
         }
         ctx.globalAlpha = 1;
 
-        // Cyber Altitude Indicator (right edge)
-        if (w >= 640) {
-          drawAltitudeIndicator(w - 22, h * 0.30, h * 0.40);
-        }
+        if (w >= 640) drawAltitudeIndicator(w - 22, h * 0.30, h * 0.40);
       }
 
       function drawAltitudeIndicator(x, topY, height) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(6, 246, 255, 0.25)';
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.55)';
+        ctx.strokeStyle = 'rgba(6, 246, 255, 0.24)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x, topY);
@@ -2557,20 +2547,19 @@
           ctx.stroke();
         }
 
-        ctx.font = '600 9px Orbitron, sans-serif';
+        ctx.font = '600 10px Orbitron, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillStyle = 'rgba(6, 246, 255, 0.65)';
+        ctx.fillStyle = '#94a3b8';
         ctx.fillText(`ALT ${Math.round(state.altitude)}m`, x - 4, topY - 8);
         ctx.restore();
       }
 
-      /* Smart Auto-Fitting Multiline Text Helper for Drone Holographic Frame */
       function drawFittedText(text, cx, cy, maxW, maxH, isComponentName) {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        let fontSize = isComponentName ? 22 : 16;
+        let fontSize = isComponentName ? 21 : 16;
         const minFont = isComponentName ? 13 : 11;
         let lines = [];
 
@@ -2594,7 +2583,7 @@
 
         while (fontSize >= minFont) {
           lines = wrap(fontSize);
-          const lineHeight = fontSize * 1.18;
+          const lineHeight = fontSize * 1.2;
           const totalH = lines.length * lineHeight;
           const widest = Math.max(...lines.map(l => ctx.measureText(l).width));
           if (totalH <= maxH && widest <= maxW) break;
@@ -2602,12 +2591,11 @@
         }
 
         ctx.font = `${isComponentName ? '800' : '600'} ${fontSize}px Kanit, Rajdhani, sans-serif`;
-        const lineHeight = fontSize * 1.18;
+        const lineHeight = fontSize * 1.2;
         const startY = cy - ((lines.length - 1) * lineHeight) / 2;
 
-        // High-contrast subtle outline + crisp white text
         ctx.lineWidth = 3.5;
-        ctx.strokeStyle = 'rgba(2, 6, 23, 0.92)';
+        ctx.strokeStyle = 'rgba(2, 6, 23, 0.96)';
         ctx.fillStyle = '#ffffff';
         lines.forEach((line, i) => {
           const ly = startY + i * lineHeight;
@@ -2635,61 +2623,53 @@
         if (!d.alive) return;
         const isLocked = state.lockedDroneId === d.uid;
         const isDeflect = d.shieldFlash > 0;
-
         const hw = d.panelW * 0.5;
         const hh = d.panelH * 0.5;
 
         ctx.save();
         ctx.translate(d.x, d.y);
 
-        // 1. Four Mechanical Quadcopter Arms & Spinning Rotors
         const armOffsets = [
-          { x: -hw - 16, y: -hh - 12, led: '#06f6ff' },
-          { x:  hw + 16, y: -hh - 12, led: '#06f6ff' },
-          { x: -hw - 16, y:  hh + 12, led: '#f59e0b' },
-          { x:  hw + 16, y:  hh + 12, led: '#f59e0b' }
+          { x: -hw - 15, y: -hh - 11, led: '#06f6ff' },
+          { x:  hw + 15, y: -hh - 11, led: '#06f6ff' },
+          { x: -hw - 15, y:  hh + 11, led: '#f59e0b' },
+          { x:  hw + 15, y:  hh + 11, led: '#f59e0b' }
         ];
 
-        // Mechanical struts
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         for (const a of armOffsets) {
+          ctx.strokeStyle = '#475569';
+          ctx.lineWidth = 5;
           ctx.beginPath();
           ctx.moveTo(a.x * 0.48, a.y * 0.48);
           ctx.lineTo(a.x, a.y);
           ctx.stroke();
 
-          ctx.strokeStyle = isLocked ? '#06f6ff' : '#94a3b8';
-          ctx.lineWidth = 1.6;
+          ctx.strokeStyle = isLocked ? '#06f6ff' : '#cbd5e1';
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.moveTo(a.x * 0.52, a.y * 0.52);
           ctx.lineTo(a.x, a.y);
           ctx.stroke();
-          ctx.strokeStyle = '#64748b';
-          ctx.lineWidth = 5;
         }
 
-        // Four Rotor Pods + Spinning Kipas + Navigation Lights
         for (const a of armOffsets) {
           ctx.save();
           ctx.translate(a.x, a.y);
 
-          // Rotor shroud
-          ctx.strokeStyle = isLocked ? 'rgba(6, 246, 255, 0.85)' : 'rgba(148, 163, 184, 0.55)';
-          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = isLocked ? '#06f6ff' : '#94a3b8';
+          ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, 17, 7.5, 0, 0, Math.PI * 2);
           ctx.stroke();
 
-          // Spinning rotor blades blur
-          ctx.fillStyle = isLocked ? 'rgba(6, 246, 255, 0.24)' : 'rgba(56, 189, 248, 0.16)';
+          ctx.fillStyle = isLocked ? 'rgba(6, 246, 255, 0.22)' : 'rgba(56, 189, 248, 0.14)';
           ctx.beginPath();
-          ctx.ellipse(0, 0, 16, 6.5, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, 15, 6, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          const bx = Math.cos(d.rotorAngle) * 15;
-          const by = Math.sin(d.rotorAngle) * 5;
+          const bx = Math.cos(d.rotorAngle) * 14;
+          const by = Math.sin(d.rotorAngle) * 4.5;
           ctx.strokeStyle = '#e0f2fe';
           ctx.lineWidth = 2;
           ctx.beginPath();
@@ -2697,65 +2677,35 @@
           ctx.lineTo(bx, by);
           ctx.stroke();
 
-          // Blinking Navigation Light
-          const blink = Math.sin(state.elapsed * 7 + a.x) > 0 ? 1 : 0.35;
-          ctx.fillStyle = isDeflect ? '#f43f5e' : a.led;
-          ctx.globalAlpha = blink;
+          ctx.fillStyle = isDeflect ? '#fb7185' : a.led;
           ctx.beginPath();
-          ctx.arc(0, 0, 3.2, 0, Math.PI * 2);
+          ctx.arc(0, 0, 3, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
 
-        // 2. Central Reactor Core (top & bottom emitters)
-        ctx.fillStyle = isLocked ? '#06f6ff' : '#8b5cf6';
-        ctx.shadowColor = isLocked ? '#06f6ff' : '#8b5cf6';
-        ctx.shadowBlur = isLocked ? 18 : 10;
+        ctx.fillStyle = isLocked ? '#06f6ff' : '#a78bfa';
         ctx.beginPath();
-        ctx.arc(0, -hh - 6, 5.5, 0, Math.PI * 2);
+        ctx.arc(0, -hh - 5, 5, 0, Math.PI * 2);
+        ctx.arc(0, hh + 5, 4, 0, Math.PI * 2);
         ctx.fill();
-        ctx.beginPath();
-        ctx.arc(0, hh + 6, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
 
-        // 3. Outer Energy Shield Aura
-        ctx.save();
-        drawRoundedRect(-hw - 5, -hh - 5, d.panelW + 10, d.panelH + 10, 16);
-        ctx.strokeStyle = isDeflect
-          ? `rgba(244, 63, 94, ${Math.min(1, d.shieldFlash + 0.3)})`
-          : isLocked
-            ? 'rgba(6, 246, 255, 0.92)'
-            : 'rgba(139, 92, 246, 0.38)';
-        ctx.lineWidth = isLocked || isDeflect ? 2.6 : 1.2;
-        ctx.stroke();
-        ctx.restore();
-
-        // 4. Central Holographic Display Panel (Priority #1: High-Contrast RBT Text)
+        // Central matte high-contrast holographic display panel.
         ctx.save();
         drawRoundedRect(-hw, -hh, d.panelW, d.panelH, 12);
-        const panelGrad = ctx.createLinearGradient(0, -hh, 0, hh);
-        if (isDeflect) {
-          panelGrad.addColorStop(0, 'rgba(88, 15, 32, 0.94)');
-          panelGrad.addColorStop(1, 'rgba(35, 9, 20, 0.95)');
-        } else if (isLocked) {
-          panelGrad.addColorStop(0, 'rgba(10, 44, 72, 0.94)');
-          panelGrad.addColorStop(1, 'rgba(6, 20, 44, 0.96)');
-        } else {
-          panelGrad.addColorStop(0, 'rgba(13, 25, 54, 0.92)');
-          panelGrad.addColorStop(1, 'rgba(6, 12, 30, 0.95)');
-        }
-        ctx.fillStyle = panelGrad;
+        if (isDeflect) ctx.fillStyle = 'rgba(69, 10, 26, 0.96)';
+        else if (isLocked) ctx.fillStyle = 'rgba(8, 34, 58, 0.96)';
+        else ctx.fillStyle = 'rgba(10, 19, 42, 0.95)';
         ctx.fill();
 
-        ctx.strokeStyle = isDeflect ? '#f43f5e' : (isLocked ? '#06f6ff' : 'rgba(56, 189, 248, 0.65)');
-        ctx.lineWidth = isLocked ? 2.5 : 1.6;
+        ctx.strokeStyle = isDeflect ? '#fb7185' : (isLocked ? '#06f6ff' : '#38bdf8');
+        ctx.lineWidth = isLocked ? 2.6 : 1.6;
         ctx.stroke();
 
-        // Corner cyber brackets inside panel
+        // Corner brackets and keyboard shortcut badge (1-4).
         const bk = 10;
         ctx.strokeStyle = isDeflect ? '#fb7185' : '#06f6ff';
-        ctx.lineWidth = 2.2;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(-hw + 4, -hh + bk + 4); ctx.lineTo(-hw + 4, -hh + 4); ctx.lineTo(-hw + bk + 4, -hh + 4);
         ctx.moveTo(hw - bk - 4, -hh + 4);  ctx.lineTo(hw - 4, -hh + 4);  ctx.lineTo(hw - 4, -hh + bk + 4);
@@ -2763,7 +2713,12 @@
         ctx.moveTo(hw - bk - 4, hh - 4);   ctx.lineTo(hw - 4, hh - 4);   ctx.lineTo(hw - 4, hh - bk - 4);
         ctx.stroke();
 
-        // 5. Compact Component Symbol + Main Text (Never overflows)
+        ctx.font = '700 11px Orbitron, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(String(d.keyIndex), -hw + 10, -hh + 8);
+
         if (d.showIcon) {
           const iconSize = Math.min(28, d.panelH * 0.25);
           const iconY = -hh + iconSize * 0.72 + 5;
@@ -2772,24 +2727,22 @@
           const textCenterY = textTop + (hh - 8 - textTop) * 0.5;
           drawFittedText(d.displayText, 0, textCenterY, d.panelW - 22, (hh - 8) - textTop, true);
         } else {
-          // Misi B: Function text gets full clear holographic screen
           drawFittedText(d.displayText, 0, 2, d.panelW - 22, d.panelH - 22, false);
         }
         ctx.restore();
 
-        // 6. Red Cyber Shield Overlay on Wrong Hit
         if (isDeflect) {
           ctx.save();
           ctx.globalAlpha = Math.min(0.85, d.shieldFlash);
-          ctx.strokeStyle = '#f43f5e';
+          ctx.strokeStyle = '#fb7185';
           ctx.fillStyle = 'rgba(244, 63, 94, 0.22)';
           ctx.lineWidth = 3;
           ctx.beginPath();
-          const sr = Math.max(hw, hh) * 1.18;
+          const sr = Math.max(hw, hh) * 1.16;
           for (let i = 0; i < 6; i++) {
             const ang = (Math.PI / 3) * i - Math.PI / 6;
             const sx = Math.cos(ang) * sr;
-            const sy = Math.sin(ang) * (hh * 1.35);
+            const sy = Math.sin(ang) * (hh * 1.32);
             if (i === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
           }
           ctx.closePath();
@@ -2798,7 +2751,6 @@
           ctx.restore();
         }
 
-        // 7. TARGET LOCK Rotating Reticle + Charge Ring
         if (isLocked) {
           drawTargetLockReticle(0, 0, Math.max(hw, hh) + 18, state.chargeProgress);
         }
@@ -2810,9 +2762,8 @@
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Rotating outer dashed ring
         ctx.save();
-        ctx.rotate(state.elapsed * 2.8);
+        ctx.rotate(state.reducedMotion ? 0 : state.elapsed * 2.8);
         ctx.strokeStyle = '#06f6ff';
         ctx.lineWidth = 2.4;
         ctx.setLineDash([16, 10]);
@@ -2821,10 +2772,9 @@
         ctx.stroke();
         ctx.restore();
 
-        // Counter-rotating inner violet ticks
         ctx.save();
-        ctx.rotate(-state.elapsed * 3.8);
-        ctx.strokeStyle = 'rgba(139, 92, 246, 0.85)';
+        ctx.rotate(state.reducedMotion ? 0 : -state.elapsed * 3.8);
+        ctx.strokeStyle = 'rgba(167, 139, 250, 0.85)';
         ctx.lineWidth = 2;
         ctx.setLineDash([6, 14]);
         ctx.beginPath();
@@ -2832,22 +2782,20 @@
         ctx.stroke();
         ctx.restore();
 
-        // Charge progress arc (0 -> 100%)
         ctx.strokeStyle = charge > 0.75 ? '#f59e0b' : '#06f6ff';
         ctx.shadowColor = '#06f6ff';
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 12;
         ctx.lineWidth = 4.5;
         ctx.beginPath();
         ctx.arc(0, 0, radius + 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, charge));
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // TARGET LOCK badge above drone
         const pct = Math.round(Math.min(1, charge) * 100);
         const label = pct >= 96 ? 'FIRE!' : `TARGET LOCK ${pct}%`;
         ctx.font = '800 12px Orbitron, sans-serif';
         const tw = ctx.measureText(label).width + 18;
-        ctx.fillStyle = 'rgba(5, 14, 34, 0.92)';
+        ctx.fillStyle = '#070d1f';
         drawRoundedRect(-tw / 2, -radius - 26, tw, 22, 6);
         ctx.fill();
         ctx.strokeStyle = '#06f6ff';
@@ -2858,13 +2806,9 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, 0, -radius - 15);
-
         ctx.restore();
       }
 
-      /* ============================================================================
-         15. MECHA CYBER GAUNTLET RENDERER (21 MEDIAPIPE LANDMARKS + FALLBACK EMITTER)
-      ============================================================================ */
       const HAND_CONNECTIONS = [
         [0,1],[1,2],[2,3],[3,4],
         [0,5],[5,6],[6,7],[7,8],
@@ -2875,36 +2819,24 @@
       ];
 
       function drawCyberGauntlet() {
-        // Case A: Real-time 21-landmark MediaPipe Hand Gauntlet
         if (state.handDetected && state.handLandmarks) {
           const lm = state.handLandmarks;
           const open = state.handOpenPalm;
 
           ctx.save();
-
-          // 1. Armored Palm Plate (polygon across wrist & knuckles)
           ctx.beginPath();
           [0, 1, 5, 9, 13, 17].forEach((idx, i) => {
             if (i === 0) ctx.moveTo(lm[idx].x, lm[idx].y);
             else ctx.lineTo(lm[idx].x, lm[idx].y);
           });
           ctx.closePath();
-          const palmGrad = ctx.createRadialGradient(
-            state.palmSmooth.x, state.palmSmooth.y, 4,
-            state.palmSmooth.x, state.palmSmooth.y, 90
-          );
-          palmGrad.addColorStop(0, open ? 'rgba(6, 246, 255, 0.35)' : 'rgba(139, 92, 246, 0.25)');
-          palmGrad.addColorStop(0.6, 'rgba(30, 41, 59, 0.62)');
-          palmGrad.addColorStop(1, 'rgba(15, 23, 42, 0.72)');
-          ctx.fillStyle = palmGrad;
+          ctx.fillStyle = open ? 'rgba(13, 43, 69, 0.72)' : 'rgba(15, 23, 42, 0.72)';
           ctx.fill();
-          ctx.strokeStyle = open ? '#06f6ff' : '#8b5cf6';
+          ctx.strokeStyle = open ? '#06f6ff' : '#a78bfa';
           ctx.lineWidth = 2.2;
           ctx.stroke();
 
-          // 2. Mechanical Armor Bones & Glowing Circuit Lines
           for (const [a, b] of HAND_CONNECTIONS) {
-            // Outer titanium/slate armor strut
             ctx.strokeStyle = 'rgba(51, 65, 85, 0.9)';
             ctx.lineWidth = 8;
             ctx.lineCap = 'round';
@@ -2913,16 +2845,14 @@
             ctx.lineTo(lm[b].x, lm[b].y);
             ctx.stroke();
 
-            // Titanium highlight
             ctx.strokeStyle = 'rgba(203, 213, 225, 0.72)';
-            ctx.lineWidth = 3.2;
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(lm[a].x, lm[a].y);
             ctx.lineTo(lm[b].x, lm[b].y);
             ctx.stroke();
 
-            // Inner glowing circuit line (Cyber Cyan when open, Violet when closed)
-            ctx.strokeStyle = open ? '#06f6ff' : '#8b5cf6';
+            ctx.strokeStyle = open ? '#06f6ff' : '#a78bfa';
             ctx.lineWidth = 1.6;
             ctx.beginPath();
             ctx.moveTo(lm[a].x, lm[a].y);
@@ -2930,7 +2860,6 @@
             ctx.stroke();
           }
 
-          // 3. Mechanical Joints & Fingertip Energy Nodes
           lm.forEach((pt, idx) => {
             const isTip = idx === 4 || idx === 8 || idx === 12 || idx === 16 || idx === 20;
             const r = isTip ? 6.5 : 4.2;
@@ -2945,19 +2874,16 @@
             if (isTip && open) {
               ctx.fillStyle = '#06f6ff';
               ctx.beginPath();
-              ctx.arc(pt.x, pt.y, 2.6, 0, Math.PI * 2);
+              ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
               ctx.fill();
             }
           });
 
-          // 4. Palm ARC CORE & Rotating Energy Rings
           drawArcCore(state.palmSmooth.x, state.palmSmooth.y, open, state.chargeProgress);
-
           ctx.restore();
           return;
         }
 
-        // Case B: Mouse / Touch Fallback Holo-Emitter Reticle
         if (state.screen === 'playing' && (state.inputMode === 'pointer' || state.pointerActive)) {
           drawArcCore(state.pointerPos.x, state.pointerPos.y, state.pointerDown, state.chargeProgress, true);
         }
@@ -2967,80 +2893,66 @@
         ctx.save();
         ctx.translate(cx, cy);
 
-        const baseR = isPointer ? 20 : 24;
-        const glowR = baseR + charge * 18;
+        const baseR = isPointer ? 19 : 23;
+        const glowR = baseR + charge * 16;
 
-        // Ambient glow
-        const g = ctx.createRadialGradient(0, 0, 2, 0, 0, glowR * 1.9);
-        g.addColorStop(0, isActive ? 'rgba(6, 246, 255, 0.92)' : 'rgba(139, 92, 246, 0.45)');
-        g.addColorStop(0.5, isActive ? 'rgba(56, 189, 248, 0.35)' : 'rgba(139, 92, 246, 0.12)');
+        const g = ctx.createRadialGradient(0, 0, 2, 0, 0, glowR * 1.8);
+        g.addColorStop(0, isActive ? 'rgba(6, 246, 255, 0.85)' : 'rgba(167, 139, 250, 0.4)');
+        g.addColorStop(0.5, isActive ? 'rgba(56, 189, 248, 0.28)' : 'rgba(167, 139, 250, 0.1)');
         g.addColorStop(1, 'rgba(6, 246, 255, 0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(0, 0, glowR * 1.9, 0, Math.PI * 2);
+        ctx.arc(0, 0, glowR * 1.8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Outer spinning energy ring
         ctx.save();
         ctx.rotate(state.arcRotation);
-        ctx.strokeStyle = isActive ? '#06f6ff' : '#8b5cf6';
-        ctx.lineWidth = 2.6;
+        ctx.strokeStyle = isActive ? '#06f6ff' : '#a78bfa';
+        ctx.lineWidth = 2.4;
         ctx.setLineDash([10, 6]);
         ctx.beginPath();
         ctx.arc(0, 0, baseR, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Inner counter-spinning titanium ring
         ctx.save();
         ctx.rotate(-state.arcRotation * 1.4);
         ctx.strokeStyle = isActive ? '#e0f2fe' : '#94a3b8';
-        ctx.lineWidth = 1.8;
+        ctx.lineWidth = 1.6;
         ctx.setLineDash([5, 7]);
         ctx.beginPath();
         ctx.arc(0, 0, baseR * 0.62, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
 
-        // Central bright core
         ctx.fillStyle = isActive ? '#ffffff' : '#a78bfa';
-        ctx.shadowColor = isActive ? '#06f6ff' : '#8b5cf6';
-        ctx.shadowBlur = isActive ? 20 : 8;
         ctx.beginPath();
-        ctx.arc(0, 0, isActive ? 7 + charge * 4 : 5, 0, Math.PI * 2);
+        ctx.arc(0, 0, isActive ? 6.5 + charge * 3.5 : 4.5, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.restore();
       }
 
-      /* ============================================================================
-         16. BEAMS, EXPLOSIONS, SHOCKWAVES & FLOATING SCORES
-      ============================================================================ */
       function drawEffects() {
-        // Energy Beams
         for (const b of state.beams) {
           const alpha = Math.max(0, b.life / b.maxLife);
           ctx.save();
           ctx.lineCap = 'round';
-          // Outer Cyber Cyan Glow
-          ctx.strokeStyle = `rgba(6, 246, 255, ${alpha * 0.45})`;
-          ctx.lineWidth = 22 * alpha + 6;
+          ctx.strokeStyle = `rgba(6, 246, 255, ${alpha * 0.42})`;
+          ctx.lineWidth = 20 * alpha + 6;
           ctx.beginPath();
           ctx.moveTo(b.x1, b.y1);
           ctx.lineTo(b.x2, b.y2);
           ctx.stroke();
 
-          // Mid Cyber Blue
           ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.9})`;
-          ctx.lineWidth = 9 * alpha + 2;
+          ctx.lineWidth = 8 * alpha + 2;
           ctx.beginPath();
           ctx.moveTo(b.x1, b.y1);
           ctx.lineTo(b.x2, b.y2);
           ctx.stroke();
 
-          // White hot core
           ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-          ctx.lineWidth = 3.5 * alpha + 1;
+          ctx.lineWidth = 3 * alpha + 1;
           ctx.beginPath();
           ctx.moveTo(b.x1, b.y1);
           ctx.lineTo(b.x2, b.y2);
@@ -3048,20 +2960,18 @@
           ctx.restore();
         }
 
-        // Shockwaves
         for (const sw of state.shockwaves) {
           const alpha = Math.max(0, sw.life / sw.maxLife);
           ctx.save();
           ctx.strokeStyle = sw.color;
           ctx.globalAlpha = alpha * 0.85;
-          ctx.lineWidth = 4 * alpha + 1;
+          ctx.lineWidth = 3.5 * alpha + 1;
           ctx.beginPath();
           ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
           ctx.stroke();
           ctx.restore();
         }
 
-        // Debris & Sparks
         for (const p of state.particles) {
           const alpha = Math.max(0, p.life / p.maxLife);
           ctx.save();
@@ -3069,9 +2979,8 @@
           ctx.rotate(p.rot);
           ctx.globalAlpha = alpha;
           ctx.fillStyle = p.color;
-          if (p.shape === 'shard') {
-            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
-          } else {
+          if (p.shape === 'shard') ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          else {
             ctx.beginPath();
             ctx.arc(0, 0, p.size * 0.55, 0, Math.PI * 2);
             ctx.fill();
@@ -3079,16 +2988,13 @@
           ctx.restore();
         }
 
-        // Floating Score Popups
         for (const ft of state.floatingTexts) {
           const alpha = Math.max(0, ft.life / ft.maxLife);
           ctx.save();
           ctx.globalAlpha = alpha;
           ctx.textAlign = 'center';
-          ctx.font = '900 28px Orbitron, sans-serif';
+          ctx.font = '900 26px Orbitron, sans-serif';
           ctx.fillStyle = ft.color;
-          ctx.shadowColor = ft.color;
-          ctx.shadowBlur = 14;
           ctx.fillText(ft.text, ft.x, ft.y);
 
           ctx.font = '700 13px Orbitron, sans-serif';
@@ -3098,33 +3004,27 @@
         }
       }
 
-      /* ============================================================================
-         17. MAIN RENDER FRAME & ANIMATION LOOP
-      ============================================================================ */
       function render() {
         ctx.save();
         ctx.scale(state.dpr, state.dpr);
 
-        // Screen shake on wrong hit
         if (state.screenShake > 0.1) {
-          const sx = (Math.random() - 0.5) * state.screenShake;
-          const sy = (Math.random() - 0.5) * state.screenShake;
-          ctx.translate(sx, sy);
+          ctx.translate(
+            (Math.random() - 0.5) * state.screenShake,
+            (Math.random() - 0.5) * state.screenShake
+          );
         }
 
         drawBackground();
 
         if (state.screen === 'playing') {
-          for (const d of state.drones) {
-            drawDrone(d);
-          }
+          for (const d of state.drones) drawDrone(d);
           drawEffects();
           drawCyberGauntlet();
         } else {
           drawEffects();
         }
 
-        // Screen flash overlay
         if (state.screenFlash > 0) {
           ctx.fillStyle = state.flashColor;
           ctx.globalAlpha = state.screenFlash;
@@ -3145,24 +3045,19 @@
         state.rafId = requestAnimationFrame(mainLoop);
       }
 
-      /* ============================================================================
-         18. FLASHCARD STUDY MODE (ULANG KAJI NOTA RBT)
-      ============================================================================ */
       let fcIndex = 0;
       let fcReturnModal = modalStart;
       const fcIconCache = {};
 
-      function getIconImgHTML(code) {
-        if (!fcIconCache[code]) {
-          fcIconCache[code] = renderIconToDataURL(code, 72);
-        }
-        return `<img src="${fcIconCache[code]}" alt="${code}" class="w-14 h-14 object-contain" />`;
+      function getIconImgHTML(code, name) {
+        if (!fcIconCache[code]) fcIconCache[code] = renderIconToDataURL(code, 72);
+        return `<img src="${fcIconCache[code]}" alt="Simbol ${name}" width="56" height="56" class="w-14 h-14 object-contain" />`;
       }
 
       function renderFlashcard() {
         const item = RBT_ITEMS[fcIndex];
         document.getElementById('flashcard-counter').textContent = `KAD ${String(fcIndex + 1).padStart(2, '0')} / 16`;
-        document.getElementById('fc-icon-box').innerHTML = getIconImgHTML(item.code);
+        document.getElementById('fc-icon-box').innerHTML = getIconImgHTML(item.code, item.name);
         document.getElementById('fc-front-name').textContent = item.name.toUpperCase();
         document.getElementById('fc-back-name').textContent = item.name.toUpperCase();
         document.getElementById('fc-back-func').textContent = item.func;
@@ -3172,9 +3067,9 @@
       function buildFlashcardList() {
         const container = document.getElementById('fc-list-view');
         container.innerHTML = RBT_ITEMS.map(item => `
-          <div class="bg-slate-900/80 border border-cyberCyan/30 rounded-xl p-3 flex items-start gap-3">
-            <div class="w-12 h-12 rounded-lg bg-slate-950 border border-cyberCyan/35 flex items-center justify-center shrink-0">
-              ${getIconImgHTML(item.code)}
+          <div class="bg-slate-950 border border-slate-700 rounded-xl p-3 flex items-start gap-3">
+            <div class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center shrink-0">
+              ${getIconImgHTML(item.code, item.name)}
             </div>
             <div class="min-w-0">
               <div class="font-orbitron text-xs font-bold text-cyberCyan">${item.id}. ${item.name.toUpperCase()}</div>
@@ -3189,12 +3084,9 @@
         fcIndex = 0;
         renderFlashcard();
         buildFlashcardList();
-        showModal(modalFlashcards);
+        showModal(modalFlashcards, () => showModal(fcReturnModal));
       }
 
-      /* ============================================================================
-         19. POINTER / TOUCH FALLBACK LISTENERS
-      ============================================================================ */
       function setPointerPosFromEvent(e) {
         const rect = canvas.getBoundingClientRect();
         state.pointerPos.x = e.clientX - rect.left;
@@ -3202,7 +3094,7 @@
       }
 
       canvas.addEventListener('pointerdown', (e) => {
-        if (state.screen !== 'playing') return;
+        if (state.screen !== 'playing' || state.paused) return;
         audio.ensureContext();
         state.pointerActive = true;
         state.pointerDown = true;
@@ -3215,26 +3107,49 @@
         setPointerPosFromEvent(e);
       });
 
-      window.addEventListener('pointerup', () => {
-        state.pointerDown = false;
-      });
-      window.addEventListener('pointercancel', () => {
-        state.pointerDown = false;
+      window.addEventListener('pointerup', () => { state.pointerDown = false; });
+      window.addEventListener('pointercancel', () => { state.pointerDown = false; });
+
+      // Keyboard controls so players can complete the full mission without a camera or mouse.
+      window.addEventListener('keydown', (e) => {
+        if (state.screen !== 'playing' || activeModal) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          returnToMainMenu();
+          return;
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          setPaused(!state.paused);
+          return;
+        }
+        if (state.paused) return;
+        const digit = Number(e.key);
+        if (digit >= 1 && digit <= state.drones.length) {
+          audio.ensureContext();
+          state.keyboardTargetIdx = digit - 1;
+        }
       });
 
-      /* ============================================================================
-         20. UI BUTTON & MODAL EVENT BINDINGS
-      ============================================================================ */
-      // Mission mode selector pills
+      window.addEventListener('keyup', (e) => {
+        const digit = Number(e.key);
+        if (digit >= 1 && digit <= 4 && state.keyboardTargetIdx === digit - 1) {
+          state.keyboardTargetIdx = -1;
+        }
+      });
+
       document.querySelectorAll('#modal-start .mode-pill').forEach(btn => {
         btn.addEventListener('click', () => {
-          document.querySelectorAll('#modal-start .mode-pill').forEach(b => b.classList.remove('selected'));
+          document.querySelectorAll('#modal-start .mode-pill').forEach(b => {
+            b.classList.remove('selected');
+            b.setAttribute('aria-pressed', 'false');
+          });
           btn.classList.add('selected');
+          btn.setAttribute('aria-pressed', 'true');
           state.selectedMissionMode = btn.dataset.mode;
         });
       });
 
-      // Start modal actions
       document.getElementById('btn-start-mission').addEventListener('click', () => startMissionWithCamera());
       document.getElementById('btn-start-fallback').addEventListener('click', () => {
         stopCameraCleanly();
@@ -3242,13 +3157,11 @@
       });
       document.getElementById('btn-open-notes-start').addEventListener('click', () => openFlashcards(modalStart));
 
-      // Loading modal fallback shortcut
       document.getElementById('btn-loading-fallback').addEventListener('click', () => {
         stopCameraCleanly();
         beginGameplay('pointer');
       });
 
-      // Camera error modal actions
       document.getElementById('btn-retry-camera').addEventListener('click', () => startMissionWithCamera());
       document.getElementById('btn-error-fallback').addEventListener('click', () => {
         stopCameraCleanly();
@@ -3256,25 +3169,28 @@
       });
       document.getElementById('btn-error-menu').addEventListener('click', () => returnToMainMenu());
 
-      // HUD controls
+      document.getElementById('btn-toggle-pause').addEventListener('click', () => setPaused(!state.paused));
+
       document.getElementById('btn-toggle-audio').addEventListener('click', () => {
         audio.setMuted(!audio.muted);
+        document.getElementById('btn-toggle-audio').setAttribute('aria-pressed', String(audio.muted));
         document.getElementById('icon-sound-on').classList.toggle('hidden', audio.muted);
         document.getElementById('icon-sound-off').classList.toggle('hidden', !audio.muted);
       });
+
       document.getElementById('btn-toggle-cam-bg').addEventListener('click', () => {
         state.showCameraUnderlay = !state.showCameraUnderlay;
+        document.getElementById('btn-toggle-cam-bg').setAttribute('aria-pressed', String(state.showCameraUnderlay));
       });
+
       document.getElementById('btn-hud-menu').addEventListener('click', () => returnToMainMenu());
 
-      // Victory modal buttons
       document.getElementById('btn-play-again').addEventListener('click', () => {
         beginGameplay(state.cameraRunning ? 'hand' : 'pointer');
       });
       document.getElementById('btn-review-notes').addEventListener('click', () => openFlashcards(modalVictory));
       document.getElementById('btn-victory-menu').addEventListener('click', () => returnToMainMenu());
 
-      // Flashcard modal buttons
       const fcInner = document.getElementById('flashcard-inner');
       document.getElementById('flashcard-trigger').addEventListener('click', () => fcInner.classList.toggle('flipped'));
       document.getElementById('btn-fc-flip').addEventListener('click', () => fcInner.classList.toggle('flipped'));
@@ -3286,34 +3202,36 @@
         fcIndex = (fcIndex + 1) % RBT_ITEMS.length;
         renderFlashcard();
       });
-      document.getElementById('btn-fc-card-mode').addEventListener('click', () => {
-        document.getElementById('btn-fc-card-mode').classList.add('selected');
-        document.getElementById('btn-fc-list-mode').classList.remove('selected');
+
+      const btnCardMode = document.getElementById('btn-fc-card-mode');
+      const btnListMode = document.getElementById('btn-fc-list-mode');
+      btnCardMode.addEventListener('click', () => {
+        btnCardMode.classList.add('selected');
+        btnCardMode.setAttribute('aria-selected', 'true');
+        btnListMode.classList.remove('selected');
+        btnListMode.setAttribute('aria-selected', 'false');
         document.getElementById('fc-single-view').classList.remove('hidden');
         document.getElementById('fc-list-view').classList.add('hidden');
       });
-      document.getElementById('btn-fc-list-mode').addEventListener('click', () => {
-        document.getElementById('btn-fc-list-mode').classList.add('selected');
-        document.getElementById('btn-fc-card-mode').classList.remove('selected');
+      btnListMode.addEventListener('click', () => {
+        btnListMode.classList.add('selected');
+        btnListMode.setAttribute('aria-selected', 'true');
+        btnCardMode.classList.remove('selected');
+        btnCardMode.setAttribute('aria-selected', 'false');
         document.getElementById('fc-list-view').classList.remove('hidden');
         document.getElementById('fc-single-view').classList.add('hidden');
       });
-      document.getElementById('btn-close-flashcards').addEventListener('click', () => {
-        showModal(fcReturnModal);
-      });
+      document.getElementById('btn-close-flashcards').addEventListener('click', () => showModal(fcReturnModal));
 
-      // Lifecycle cleanup on tab close
       window.addEventListener('resize', resizeCanvas);
       window.addEventListener('beforeunload', () => {
         stopCameraCleanly();
         if (state.rafId) cancelAnimationFrame(state.rafId);
       });
 
-      /* ============================================================================
-         21. BOOTSTRAP
-      ============================================================================ */
       buildMissionNodes();
       resizeCanvas();
+      showModal(modalStart);
       state.rafId = requestAnimationFrame(mainLoop);
     })();
   </script>
